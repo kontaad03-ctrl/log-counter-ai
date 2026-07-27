@@ -531,20 +531,5 @@
 
       loadModel();
     </script>
-    let session = null;
-
-async function loadModel() {
-  try {
-    session = await ort.InferenceSession.create(
-      "./best.onnx"
-    );
-
-    console.log("✅ ONNXロード成功");
-  } catch (e) {
-    console.error("❌ ONNXロード失敗", e);
-  }
-}
-
-loadModel();
   </body>
 </html>
