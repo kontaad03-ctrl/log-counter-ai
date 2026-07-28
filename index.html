@@ -57,6 +57,8 @@
     <button onclick="undoLast()">↩ 元に戻す</button>
     <button onclick="clearCurrent()">🚮 マーカーを全削除</button>
     <button onclick="toggleExcludeMode()">🚫 除外エリア</button>
+    <button onclick="togglePolygonMode()">🔺 ポリゴン除外</button>
+
     <button onclick="testInference()">🤖 自動検出</button>
 
     <div class="help">
@@ -162,6 +164,10 @@
       let selectEnd = null;
       let excludeMode = false;
       let excludeRects = [];
+      
+      let polygonMode = false;
+      let currentPolygon = [];
+      let excludePolygons = [];
 
       let showNumber = true;
       let history = [];
@@ -192,6 +198,15 @@
         showMsg(
           excludeMode
           ? "🚫 除外エリアモード"
+          : "通常モード"
+        );
+      }
+      function togglePolygonMode() {
+        polygonMode = !polygonMode;
+        currentPolygon = [];
+        showMsg(
+          polygonMode
+          ? "🔺 ポリゴン除外モード"
           : "通常モード"
         );
       }
@@ -297,6 +312,34 @@
             r.h
           );
         });
+        if (currentPolygon.length > 0) {
+          ctx.strokeStyle = "lime";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(
+            currentPolygon[0].x,
+            currentPolygon[0].y
+          );
+          for(let i=1;i<currentPolygon.length;i++){
+            ctx.lineTo(
+              currentPolygon[i].x,
+              currentPolygon[i].y
+            );
+          }
+          ctx.stroke();
+          currentPolygon.forEach(p => {
+            ctx.fillStyle = "yellow";
+            ctx.beginPath();
+            ctx.arc(
+              p.x,
+              p.y,
+              5,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+          });
+        }
         if (
           excludeMode &&
           selecting &&
@@ -344,6 +387,16 @@
         return { idx, dist: b };
       }
       cv.onmousedown = (e) => {
+        if (
+          polygonMode &&
+          e.button === 0
+        ) {
+          currentPolygon.push(
+            pos(e)
+          );
+          draw();
+          return;
+        }
         if (
           excludeMode &&
           e.button === 0
@@ -483,6 +536,17 @@
         { passive: false }
       );
       cv.ondblclick = () => {
+        if (
+          polygonMode &&
+          currentPolygon.length >= 3
+        ) {
+          excludePolygons.push([
+            ...currentPolygon
+          ]);
+          currentPolygon = [];
+          draw();
+          return;
+        }
         scale = 1;
         draw();
       };
