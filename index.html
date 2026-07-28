@@ -279,6 +279,7 @@
           ctx.fillStyle = 'black';
           ctx.fillText(i + 1, p.x + 18, p.y);
         });
+        console.log("描画中の除外数", excludeRects.length);
         excludeRects.forEach(r => {
           ctx.fillStyle = "rgba(0,0,0,0.35)";
           ctx.fillRect(
