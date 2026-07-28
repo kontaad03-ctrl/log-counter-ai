@@ -56,6 +56,7 @@
     <button onclick="saveView()">PNG表示</button>
     <button onclick="undoLast()">↩ 元に戻す</button>
     <button onclick="clearCurrent()">🚮 マーカーを全削除</button>
+    <button onclick="toggleExcludeMode()">🚫 除外エリア</button>
     <button onclick="testInference()">🤖 自動検出</button>
 
     <div class="help">
@@ -155,6 +156,12 @@
         selected = -1,
         holdTimer = null,
         moved = false;
+      
+      let selecting = false;
+      let selectStart = null;
+      let selectEnd = null;
+      let excludeMode = false;
+      let excludeRects = [];
 
       let showNumber = true;
       let history = [];
@@ -179,6 +186,14 @@
           .querySelectorAll('[id^=b_]')
           .forEach((x) => x.classList.remove('active'));
         document.getElementById('b_' + c).classList.add('active');
+      }
+      function toggleExcludeMode() {
+        excludeMode = !excludeMode;
+        showMsg(
+          excludeMode
+          ? "🚫 除外エリアモード"
+          : "通常モード"
+        );
       }
       function updateNmsLabel() {
         nmsLabel.textContent =
@@ -263,6 +278,23 @@
           ctx.strokeText(i + 1, p.x + 18, p.y);
           ctx.fillStyle = 'black';
           ctx.fillText(i + 1, p.x + 18, p.y);
+        });
+        excludeRects.forEach(r => {
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.fillRect(
+            r.x,
+            r.y,
+            r.w,
+            r.h
+          );
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(
+            r.x,
+            r.y,
+            r.w,
+            r.h
+          );
         });
         ctx.restore();
         photoCount.textContent = 'この写真:' + pts.length + '本';
