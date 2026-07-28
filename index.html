@@ -106,12 +106,14 @@
     ><button id="b_red" class="colorbtn active" onclick="setBorder('red')">
       赤</button
     ><button id="b_blue" class="colorbtn" onclick="setBorder('blue')">青</button
-    ><br />マーカーサイズ<input
+    ><br />
+    マーカーサイズ
+    <input
       type="range"
       id="msize"
-      min="10"
+      min="5"
       max="60"
-      value="25"
+      value="15"
     />
     重なり許容度
     <input
@@ -182,6 +184,13 @@
         nmsLabel.textContent =
           (nms.value / 100).toFixed(2);
       }
+      msize.oninput = () => {
+        photos[current].pts.forEach(p => {
+          p.size = +msize.value;
+        });
+        pts = photos[current].pts;
+        draw();
+      };
       file.onchange = async (e) => {
         photos = [];
         for (const f of [...e.target.files]) {
