@@ -344,7 +344,10 @@
         return { idx, dist: b };
       }
       cv.onmousedown = (e) => {
-        if (excludeMode) {
+        if (
+          excludeMode &&
+          e.button === 0
+        ) {
           selecting = true;
           selectStart = pos(e);
           selectEnd = pos(e);
@@ -362,7 +365,8 @@
       cv.onmouseup = (e) => {
         if (
           excludeMode &&
-          selecting
+          selecting &&
+          e.button === 0
         ) {
           selecting = false;
           console.log("除外エリア追加");
