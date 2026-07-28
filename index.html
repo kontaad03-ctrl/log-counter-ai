@@ -586,6 +586,86 @@
         window.lastResults = results;
         
         console.log(results);
+
+        const d = results.output0.data;
+        const N = 33600;
+        
+        let tempPts = [];
+        
+        for (let i = 0; i < N; i++) {
+          
+          const conf = d[i + N * 4];
+          
+          if (conf >= 0.3) {
+            
+            tempPts.push({
+              x: d[i],
+              y: d[i + N],
+              w: d[i + N * 2],
+              h: d[i + N * 3],
+              conf
+            });
+          
+          }
+        }
+        function iou(a, b) {
+          
+          const ax1 = a.x - a.w / 2;
+          const ay1 = a.y - a.h / 2;
+          const ax2 = a.x + a.w / 2;
+          const ay2 = a.y + a.h / 2;
+          
+          const bx1 = b.x - b.w / 2;
+          const by1 = b.y - b.h / 2;
+          const bx2 = b.x + b.w / 2;
+          const by2 = b.y + b.h / 2;
+          
+          const interX1 = Math.max(ax1, bx1);
+          const interY1 = Math.max(ay1, by1);
+          const interX2 = Math.min(ax2, bx2);
+          const interY2 = Math.min(ay2, by2);
+          
+          const interW = Math.max(0, interX2 - interX1);
+          const interH = Math.max(0, interY2 - interY1);
+          
+          const interArea = interW * interH;
+          
+          const areaA = a.w * a.h;
+          const areaB = b.w * b.h;
+          
+          return interArea / (areaA + areaB - interArea);
+        }
+        let nmsPts = [...tempPts]
+          .sort((a,b)=>b.conf-a.conf);
+        
+        let finalPts = [];
+        
+        while (nmsPts.length) {
+          
+          const best = nmsPts.shift();
+          
+          finalPts.push(best);
+          
+          nmsPts = nmsPts.filter(
+            p => iou(best,p) < 0.5
+          );
+        }
+        const scaleX = img.width / 1280;
+        const scaleY = img.height / 1280;
+        
+        pts = finalPts.map(p => ({
+          x: p.x * scaleX,
+          y: p.y * scaleY,
+          size: +msize.value,
+          fill: fillColor,
+          border: borderColor
+        }));
+
+        photos[current].pts = pts;
+        
+        draw();
+        
+        showMsg(`✅ ${pts.length}本検出`);
       } 
       
     </script>
