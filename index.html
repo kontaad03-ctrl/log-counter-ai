@@ -524,6 +524,10 @@
           session = await ort.InferenceSession.create('./log_counter_v6.onnx');
 
           console.log('✅ ONNXロード成功');
+
+          console.log("入力名=", session.inputNames);
+          console.log("出力名=", session.outputNames);
+          
         } catch (e) {
           console.error('❌ ONNXロード失敗', e);
         }
