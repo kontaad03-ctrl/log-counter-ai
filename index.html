@@ -195,6 +195,9 @@
       }
       function toggleExcludeMode() {
         excludeMode = !excludeMode;
+        if (excludeMode) {
+          polygonMode = false;
+        }
         showMsg(
           excludeMode
           ? "🚫 除外エリアモード"
@@ -203,6 +206,9 @@
       }
       function togglePolygonMode() {
         polygonMode = !polygonMode;
+        if (polygonMode) {
+          excludeMode = false;
+        }
         currentPolygon = [];
         showMsg(
           polygonMode
@@ -416,6 +422,9 @@
         }, 400);
       };
       cv.onmouseup = (e) => {
+        if (polygonMode) {
+          return;
+        }
         if (
           excludeMode &&
           selecting &&
