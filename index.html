@@ -435,14 +435,27 @@
       };
       cv.oncontextmenu = (e) => {
         e.preventDefault();
-
-        let n = nearest(pos(e));
-
+        const p = pos(e);
+        if (excludeMode) {
+          for (let i = excludeRects.length - 1; i >= 0; i--) {
+            const r = excludeRects[i];
+            if (
+              p.x >= r.x &&
+              p.x <= r.x + r.w &&
+              p.y >= r.y &&
+              p.y <= r.y + r.h
+            ) {
+              excludeRects.splice(i, 1);
+              draw();
+              return;
+            }
+          }
+          return;
+        }
+        let n = nearest(p);
         if (n.idx >= 0) {
           history.push(JSON.stringify(pts));
-
           pts.splice(n.idx, 1);
-
           draw();
         }
       };
