@@ -434,10 +434,11 @@
         }
       };
       cv.oncontextmenu = (e) => {
-        alert("右クリック検知");
         e.preventDefault();
         const p = pos(e);
         if (excludeMode) {
+          console.log("除外エリア一覧", excludeRects);
+          console.log("クリック位置", p);
           for (let i = excludeRects.length - 1; i >= 0; i--) {
             const r = excludeRects[i];
             if (
