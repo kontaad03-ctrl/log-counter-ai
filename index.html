@@ -434,6 +434,7 @@
         }
       };
       cv.oncontextmenu = (e) => {
+        alert("右クリック検知");
         e.preventDefault();
         const p = pos(e);
         if (excludeMode) {
