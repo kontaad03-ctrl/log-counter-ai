@@ -521,7 +521,7 @@
 
       async function loadModel() {
         try {
-          session = await ort.InferenceSession.create('./best.onnx');
+          session = await ort.InferenceSession.create('./log_counter_v6.onnx');
 
           console.log('✅ ONNXロード成功');
         } catch (e) {
