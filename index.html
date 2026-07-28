@@ -534,6 +534,58 @@
       }
 
       loadModel();
+
+      async function testInference() {
+        const canvas = document.createElement("canvas");
+        
+        canvas.width = 1280;
+        canvas.height = 1280;
+        
+        const ctx = canvas.getContext("2d");
+        
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          1280,
+          1280
+        );
+        
+        const imageData =
+          ctx.getImageData(
+            0,
+            0,
+            1280,
+            1280
+          );
+        
+        const data = new Float32Array(
+          1 * 3 * 1280 * 1280
+        );
+        
+        let p = 0;
+        
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          data[p] = imageData.data[i] / 255;
+          data[p + 1280 * 1280] = imageData.data[i + 1] / 255;
+          data[p + 2 * 1280 * 1280] = imageData.data[i + 2] / 255;
+          
+          p++;
+        }
+        
+        const tensor = new ort.Tensor(
+          "float32",
+          data,
+          [1, 3, 1280, 1280]
+        );
+        
+        const results = await session.run({
+          images: tensor
+        });
+        
+        console.log(results);
+      } 
+      
     </script>
   </body>
 </html>
