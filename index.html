@@ -296,6 +296,23 @@
             r.h
           );
         });
+        if (
+          excludeMode &&
+          selecting &&
+          selectStart &&
+          selectEnd
+        ) {
+          ctx.strokeStyle = "lime";
+          ctx.lineWidth = 2;
+          ctx.setLineDash([10, 5]);
+          ctx.strokeRect(
+            selectStart.x,
+            selectStart.y,
+            selectEnd.x - selectStart.x,
+            selectEnd.y - selectStart.y
+          );
+          ctx.setLineDash([]);
+        }
         ctx.restore();
         photoCount.textContent = 'この写真:' + pts.length + '本';
 
@@ -326,6 +343,12 @@
         return { idx, dist: b };
       }
       cv.onmousedown = (e) => {
+        if (excludeMode) {
+          selecting = true;
+          selectStart = pos(e);
+          selectEnd = pos(e);
+          return;
+        }
         if (!photos.length) return;
         let n = nearest(pos(e));
         holdTimer = setTimeout(() => {
@@ -336,6 +359,32 @@
         }, 400);
       };
       cv.onmouseup = (e) => {
+        if (
+          excludeMode &&
+          selecting
+        ) {
+          selecting = false;
+          excludeRects.push({
+            x: Math.min(
+              selectStart.x,
+              selectEnd.x
+            ),
+            y: Math.min(
+              selectStart.y,
+              selectEnd.y
+            ),
+            w: Math.abs(
+              selectEnd.x -
+              selectStart.x
+            ),
+            h: Math.abs(
+              selectEnd.y -
+              selectStart.y
+            )
+          });
+          draw();
+          return;
+        }
         clearTimeout(holdTimer);
 
         // 右クリックは追加しない
@@ -371,6 +420,14 @@
         draw();
       };
       window.onmousemove = (e) => {
+        if (
+          excludeMode &&
+          selecting
+        ) {
+          selectEnd = pos(e);
+          draw();
+          return;
+        }
         if (drag >= 0) {
           Object.assign(pts[drag], pos(e));
           draw();
