@@ -582,6 +582,8 @@
         const results = await session.run({
           images: tensor
         });
+
+        window.lastResults = results;
         
         console.log(results);
       } 
