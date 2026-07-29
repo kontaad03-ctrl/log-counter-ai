@@ -40,6 +40,9 @@
         padding: 6px;
         margin: 5px 0;
       }
+      #helpPanel {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -50,41 +53,128 @@
       id="fname"
       value="checked_logs"
       style="width: 220px"
-    /><button onclick="saveCurrent()">名前を付けて保存</button>
+    />
+    <button onclick="toggleHelp()">❓ 使い方</button>
+    <button onclick="saveCurrent()">名前を付けて保存</button>
     <button onclick="saveAll()">一括保存</button>
     <button onclick="exportCSV()">CSV保存</button>
     <button onclick="saveView()">PNG表示</button>
     <button onclick="undoLast()">↩ 元に戻す</button>
     <button onclick="clearCurrent()">🚮 マーカーを全削除</button>
-    <button onclick="toggleExcludeMode()">🚫 除外エリア</button>
+    <button onclick="toggleExcludeMode()">🚫 矩形除外</button>
     <button onclick="togglePolygonMode()">🔺 ポリゴン除外</button>
-
     <button onclick="testInference()">🤖 自動検出</button>
 
-    <div class="help">
-      <b>使い方</b><br />
-
-      ①「ファイルの選択」で写真を選択します（複数選択可）<br />
-
-      ② 丸太の中心を左クリックするとカウントします<br />
-
-      ③ マーカーを長押ししながらドラッグすると移動できます<br />
-
-      ④「↩ 元に戻す」で作業を一つ戻すことができます<br />
-
-      ⑤マーカーを右クリックすると削除できます<br />
-
-      ⑥「🚮 マーカーを全削除」でマーカーを全て削除することができます<br />
-
-      ⑦「🤖 自動検出」で丸太を自動で検出します（適宜、手修正してください）<br />
-
-      ⑧タブをクリックすると写真の切り替えができます<br />
-
-      ⑨「名前を付けて保存」で現在表示されている写真を保存できます<br />
-
-      ⑩「一括保存」で全写真と集計結果CSVをZIP形式で保存できます<br />
-
-      ⑪「CSV保存」で集計結果のみを出力できます
+    <div 
+      class="help"
+      id="helpPanel">
+      <b>🚀 クイックスタート</b><br><br>
+      📂 写真選択
+      <br>
+      ↓
+      <br>
+      🤖 AI自動検出
+      <br>
+      ↓
+      <br>
+      ✏ マーカー手修正
+      <br>
+      ↓
+      <br>
+      💾 保存
+      <br><br>
+      💡 検出したくない範囲がある場合は
+      <br>
+      🚫 矩形除外
+      <br>
+      🔺 ポリゴン除外
+      <br>
+      をご利用ください。
+      
+      <hr>
+      
+      <b>📖 クイックマニュアル</b>
+      <br><br>
+      
+      ■ 写真の読み込み
+      <br>
+      1.「ファイルの選択」で写真を選択します（複数選択可）
+      <br>
+      2.タブをクリックすると写真を切り替えできます
+      
+      <br><br>
+      
+      ■ 自動検出
+      <br>
+      3.「🤖 自動検出」で丸太を自動検出します
+      <br>
+      4.「重なり許容度」で検出結果を調整できます（デフォルト設定値だと同じ丸太にマーカーが複数ついたりする場合があるので、その時は許容度を下げて再度自動検出してネ）
+      <br>
+      5.必要に応じて手動で修正してください
+      
+      <br><br>
+      
+      ■ マーカー編集
+      <br>
+      6.左クリックでマーカーを追加します
+      <br>
+      7.長押しドラッグで移動できます
+      <br>
+      8.右クリックで削除できます
+      <br>
+      9.「↩ 元に戻す」で直前の操作を取り消せます
+      <br>
+      10.「🚮 マーカーを全削除」で現在の写真のマーカーを削除できます
+      
+      <br><br>
+      
+      ■ 除外機能
+      <br>
+      11.「🚫 矩形除外」を押すと除外エリアモードになります
+      <br>
+      12.ドラッグで矩形の除外範囲を作成できます
+      <br>
+      13.除外エリア内はAI検出対象から除外されます
+      <br>
+      14.除外エリアは右クリックで削除できます
+      <br>
+      15.通常の操作に戻る場合は「🚫 矩形除外」をもう一度押してください
+      
+      <br><br>
+      16.「🔺 ポリゴン除外」を押すとポリゴン除外モードになります
+      <br>
+      17.左クリックで頂点を追加します
+      <br>
+      18.ダブルクリックでポリゴンを確定します
+      <br>
+      19.ポリゴン内はAI検出対象から除外されます
+      <br>
+      20.ポリゴンは右クリックで削除できます
+      <br>
+      21.通常の操作に戻る場合は「🔺 ポリゴン除外」をもう一度押してください
+      
+      <br><br>
+      
+      ■ 表示操作
+      <br>
+      22.マーカーサイズを変更できます
+      <br>
+      23.番号サイズを変更できます
+      <br>
+      24.Ctrl＋マウスホイールで拡大・縮小できます
+      <br>
+      25.キャンバスをダブルクリックすると倍率を100%に戻します
+      
+      <br><br>
+      
+      ■ 保存
+      <br>
+      26.「名前を付けて保存」で現在の写真を保存できます
+      <br>
+      27.「一括保存」で全写真とCSVをZIP形式で保存できます
+      <br>
+      28.「CSV保存」で集計結果のみ保存できます
+    
     </div>
     <br />
     <div id="tabs"></div>
@@ -215,6 +305,20 @@
           ? "🔺 ポリゴン除外モード"
           : "通常モード"
         );
+      }
+      function toggleHelp() {
+        const panel =
+          document.getElementById(
+            "helpPanel"
+          );
+        if (
+          getComputedStyle(panel).display
+          === "none"
+        ) {
+          panel.style.display = "block";
+        } else {
+          panel.style.display = "none";
+        }
       }
       function updateNmsLabel() {
         nmsLabel.textContent =
