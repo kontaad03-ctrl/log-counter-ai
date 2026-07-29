@@ -64,10 +64,11 @@
         justify-content: space-between;
       }
       #compareImg {
-        width: 100%;
-        height: calc(100% - 32px);
-        object-fit: contain;
-        display: block;
+        position: absolute;
+        left: 0;
+        top: 32px;
+        transform-origin: top left;
+        cursor: grab;
       }
       #resizeHandle {
         width: 24px;
@@ -343,6 +344,13 @@
       let resizeStartY = 0;
       let startWidth = 0;
       let startHeight = 0;
+
+      let compareScale = 1;
+      let compareX = 0;
+      let compareY = 0;
+      let compareImgDrag = false;
+      let compareImgStartX = 0;
+      let compareImgStartY = 0;
       
       function showMsg(text) {
         statusElm.textContent = text;
@@ -413,6 +421,10 @@
           startHeight =
             compareWindow.offsetHeight;
         };
+      const compareImg =
+        document.getElementById(
+          "compareImg"
+        );
       compareHeader.onmousedown =
         (e) => {
           compareDrag = true;
@@ -440,6 +452,10 @@
           photos[i].img.src;
         title.textContent =
           photos[i].name;
+        compareScale = 1;
+        compareX = 0;
+        compareY = 0;
+        updateCompareView();
         win.style.display =
           "block";
       }
@@ -447,6 +463,41 @@
         document.getElementById(
           "compareWindow"
         ).style.display = "none";
+      }
+      compareImg.onmousedown =
+        (e) => {
+          compareImgDrag = true;
+          compareImgStartX =
+            e.clientX;
+          compareImgStartY =
+            e.clientY;
+        };
+      compareImg.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          compareScale *=
+            e.deltaY < 0
+            ? 1.1
+            : 0.9;
+          compareScale =
+            Math.max(
+              0.2,
+              Math.min(
+                10,
+                compareScale
+              )
+            );
+          updateCompareView();
+        },
+        {
+          passive:false
+        }
+      );
+      function updateCompareView() {
+        compareImg.style.transform =
+          `translate(${compareX}px, ${compareY}px)
+          scale(${compareScale})`;
       }
       function updateNmsLabel() {
         nmsLabel.textContent =
@@ -782,6 +833,19 @@
         draw();
       };
       window.onmousemove = (e) => {
+        if (compareImgDrag) {
+          compareX +=
+            e.clientX -
+            compareImgStartX;
+          compareY +=
+            e.clientY -
+            compareImgStartY;
+          compareImgStartX =
+            e.clientX;
+          compareImgStartY =
+            e.clientY;
+          updateCompareView();
+        }
         if (resizing) {
           compareWindow.style.width =
             Math.max(
@@ -828,6 +892,7 @@
       window.onmouseup = () => {
         resizing = false;
         compareDrag = false;
+        compareImgDrag = false;
       };
       cv.oncontextmenu = (e) => {
         e.preventDefault();
