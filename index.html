@@ -67,8 +67,13 @@
         position: absolute;
         left: 0;
         top: 32px;
+        max-width: none;
+        width: 100%;
         transform-origin: top left;
         cursor: grab;
+        user-select: none;
+        -webkit-user-drag: none;
+        touch-action: none;
       }
       #resizeHandle {
         width: 24px;
@@ -464,14 +469,6 @@
           "compareWindow"
         ).style.display = "none";
       }
-      compareImg.onmousedown =
-        (e) => {
-          compareImgDrag = true;
-          compareImgStartX =
-            e.clientX;
-          compareImgStartY =
-            e.clientY;
-        };
       compareImg.addEventListener(
         "wheel",
         (e) => {
@@ -499,6 +496,37 @@
           `translate(${compareX}px, ${compareY}px)
           scale(${compareScale})`;
       }
+      compareImg.addEventListener(
+        "pointerdown",
+        (e) => {
+          compareImgDrag = true;
+          compareImgStartX =
+            e.clientX;
+          compareImgStartY =
+            e.clientY;
+          compareImg.style.cursor =
+            "grabbing";
+          compareImg.setPointerCapture(
+            e.pointerId
+          );
+        }
+      );
+      compareImg.addEventListener(
+        "pointerup",
+        () => {
+          compareImgDrag = false;
+          compareImg.style.cursor =
+            "grab";
+        }
+      );
+      compareImg.addEventListener(
+        "pointercancel",
+        () => {
+          compareImgDrag = false;
+          compareImg.style.cursor =
+            "grab";
+        }
+      );
       function updateNmsLabel() {
         nmsLabel.textContent =
           (nms.value / 100).toFixed(2);
@@ -892,7 +920,6 @@
       window.onmouseup = () => {
         resizing = false;
         compareDrag = false;
-        compareImgDrag = false;
       };
       cv.oncontextmenu = (e) => {
         e.preventDefault();
