@@ -269,6 +269,14 @@
         ctx = cv.getContext('2d');
 
       const statusElm = document.getElementById('status');
+      const compareWindow =
+        document.getElementById(
+          'compareWindow'
+        );
+      const compareHeader =
+        document.getElementById(
+          'compareHeader'
+        );
       let photos = [],
         current = 0,
         img = new Image(),
@@ -293,6 +301,11 @@
 
       let showNumber = true;
       let history = [];
+      
+      let compareDrag = false;
+      let compareOffsetX = 0;
+      let compareOffsetY = 0;
+      
       function showMsg(text) {
         statusElm.textContent = text;
 
@@ -352,6 +365,16 @@
           panel.style.display = "none";
         }
       }
+      compareHeader.onmousedown =
+        (e) => {
+          compareDrag = true;
+          compareOffsetX =
+            e.clientX -
+            compareWindow.offsetLeft;
+          compareOffsetY =
+            e.clientY -
+            compareWindow.offsetTop;
+        };
       function openCompare(i) {
         const win =
           document.getElementById(
@@ -711,6 +734,16 @@
         draw();
       };
       window.onmousemove = (e) => {
+        if (compareDrag) {
+          compareWindow.style.left =
+            (e.clientX - compareOffsetX)
+            + "px";
+          compareWindow.style.top =
+            (e.clientY - compareOffsetY)
+            + "px";
+          compareWindow.style.right =
+            "auto";
+        }
         if (
           excludeMode &&
           selecting
@@ -723,6 +756,9 @@
           Object.assign(pts[drag], pos(e));
           draw();
         }
+      };
+      window.onmouseup = () => {
+        compareDrag = false;
       };
       cv.oncontextmenu = (e) => {
         e.preventDefault();
