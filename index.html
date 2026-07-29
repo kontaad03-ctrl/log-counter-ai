@@ -40,17 +40,30 @@
         padding: 6px;
         margin: 5px 0;
       }
-      #canvasArea {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-      }
-      #compareCv {
-        display: none;
-        border: 1px solid #666;
-      }
       #helpPanel {
         display: none;
+      }
+      #compareWindow {
+        display: none;
+        position: fixed;
+        top: 120px;
+        right: 20px;
+        width: 350px;
+        background: white;
+        border: 2px solid #666;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        z-index: 9999;
+      }
+      #compareHeader {
+        background: #f0f0f0;
+        padding: 5px;
+        cursor: move;
+        display: flex;
+        justify-content: space-between;
+      }
+      #compareImg {
+        width: 100%;
+        display: block;
       }
     </style>
   </head>
@@ -239,19 +252,22 @@
       左クリック=追加 / 長押しドラッグ=移動 / 右クリック=削除 /
       Ctrl+ホイール=ズーム
     </div>
-    <div id="canvasArea">
-      <canvas id="cv"></canvas>
-      <canvas id="compareCv"></canvas>
+    <div id="compareWindow">
+      <div id="compareHeader">
+        <span id="compareTitle">
+          比較画像
+        </span>
+        <button onclick="closeCompare()">
+          ✕
+        </button>
+      </div>
+      <img id="compareImg">
     </div>
+      <canvas id="cv"></canvas>
     <script>
       const cv = document.getElementById('cv'),
         ctx = cv.getContext('2d');
-      const compareCv =
-        document.getElementById(
-          'compareCv'
-        ),
-        compareCtx =
-        compareCv.getContext('2d');
+
       const statusElm = document.getElementById('status');
       let photos = [],
         current = 0,
@@ -274,8 +290,6 @@
       let polygonMode = false;
       let currentPolygon = [];
       let excludePolygons = [];
-
-      let compareIndex = -1;
 
       let showNumber = true;
       let history = [];
@@ -338,6 +352,31 @@
           panel.style.display = "none";
         }
       }
+      function openCompare(i) {
+        const win =
+          document.getElementById(
+            "compareWindow"
+          );
+        const imgElm =
+          document.getElementById(
+            "compareImg"
+          );
+        const title =
+          document.getElementById(
+            "compareTitle"
+          );
+        imgElm.src =
+          photos[i].img.src;
+        title.textContent =
+          photos[i].name;
+        win.style.display =
+          "block";
+      }
+      function closeCompare() {
+        document.getElementById(
+          "compareWindow"
+        ).style.display = "none";
+      }
       function updateNmsLabel() {
         nmsLabel.textContent =
           (nms.value / 100).toFixed(2);
@@ -393,8 +432,7 @@
             if (i === current) {
               return;
             }
-            compareIndex = i;
-            drawCompare();
+            openCompare(i);
           };
 
           tabs.appendChild(b);
@@ -411,35 +449,6 @@
         cv.width = img.width;
         cv.height = img.height;
         draw();
-        drawCompare();
-      }
-      function drawCompare() {
-        if (
-          compareIndex < 0 ||
-          compareIndex >= photos.length
-        ) {
-          compareCv.style.display = 'none';
-          return;
-        }
-        compareCv.style.display =
-          'block';
-        const p =
-          photos[compareIndex];
-        compareCv.width =
-          p.img.width;
-        compareCv.height =
-          p.img.height;
-        compareCtx.clearRect(
-          0,
-          0,
-          compareCv.width,
-          compareCv.height
-        );
-        compareCtx.drawImage(
-          p.img,
-          0,
-          0
-        );
       }
       function draw() {
         ctx.setTransform(1, 0, 0, 1, 0, 0);
