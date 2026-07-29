@@ -882,15 +882,45 @@
           const conf = d[i + N * 4];
           
           if (conf >= 0.3) {
-            
-            tempPts.push({
+            const candidate = {
               x: d[i],
               y: d[i + N],
               w: d[i + N * 2],
               h: d[i + N * 3],
               conf
-            });
-          
+            };
+            const scaleX = img.width / 1280;
+            const scaleY = img.height / 1280;
+            const realX = candidate.x * scaleX;
+            const realY = candidate.y * scaleY;
+            
+            // 矩形除外判定
+            const insideRect =
+              excludeRects.some(r =>
+                realX >= r.x &&
+                realX <= r.x + r.w &&
+                realY >= r.y &&
+                realY <= r.y + r.h
+                               );
+            
+            // ポリゴン除外判定
+            const insidePolygon =
+              excludePolygons.some(poly =>
+                pointInPolygon(
+                  {
+                    x: realX,
+                    y: realY
+                  },
+                  poly
+                )
+                                  );
+            
+            if (
+              !insideRect &&
+              !insidePolygon
+            ) {
+              tempPts.push(candidate);
+            }
           }
         }
         function iou(a, b) {
