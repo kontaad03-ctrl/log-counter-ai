@@ -235,7 +235,7 @@
             im.onload = r;
             im.src = URL.createObjectURL(f);
           });
-          photos.push({ name: f.name, img: im, pts: [] });
+          photos.push({ name: f.name, img: im, pts: [], excludeRects: [], excludePolygons: [] });
         }
         renderTabs();
         if (photos.length) switchTab(0);
@@ -274,6 +274,10 @@
         current = i;
         img = photos[i].img;
         pts = photos[i].pts;
+        excludeRects =
+          photos[i].excludeRects;
+        excludePolygons =
+          photos[i].excludePolygons;
         cv.width = img.width;
         cv.height = img.height;
         draw();
@@ -300,7 +304,7 @@
           ctx.fillStyle = 'black';
           ctx.fillText(i + 1, p.x + 18, p.y);
         });
-        console.log("描画中の除外数", excludeRects.length);
+        
         excludeRects.forEach(r => {
           ctx.fillStyle = "rgba(0,0,0,0.35)";
           ctx.fillRect(
@@ -479,7 +483,6 @@
           e.button === 0
         ) {
           selecting = false;
-          console.log("除外エリア追加");
           excludeRects.push({
             x: Math.min(
               selectStart.x,
@@ -498,6 +501,10 @@
               selectStart.y
             )
           });
+          
+          photos[current].excludeRects =
+            excludeRects;
+          
           draw();
           return;
         }
@@ -557,6 +564,8 @@
             const poly = excludePolygons[i];
             if (pointInPolygon(p, poly)) {
               excludePolygons.splice(i, 1);
+              photos[current].excludePolygons =
+                excludePolygons;
               draw();
               return;
             }
@@ -564,8 +573,6 @@
           return;
         }
         if (excludeMode) {
-          console.log("除外エリア一覧", excludeRects);
-          console.log("クリック位置", p);
           for (let i = excludeRects.length - 1; i >= 0; i--) {
             const r = excludeRects[i];
             if (
@@ -574,9 +581,9 @@
               p.y >= r.y &&
               p.y <= r.y + r.h
             ) {
-              console.log("削除前", i, excludeRects);
               excludeRects.splice(i, 1);
-              console.log("削除後",excludeRects);
+              photos[current].excludeRects =
+                excludeRects;
               draw();
               return;
             }
@@ -611,6 +618,10 @@
           excludePolygons.push([
             ...currentPolygon
           ]);
+          
+          photos[current].excludePolygons =
+            excludePolygons;
+          
           currentPolygon = [];
           draw();
           return;
