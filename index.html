@@ -49,6 +49,8 @@
         top: 120px;
         right: 20px;
         width: 350px;
+        height: 300px;
+        overflow: hidden;
         background: white;
         border: 2px solid #666;
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
@@ -63,6 +65,8 @@
       }
       #compareImg {
         width: 100%;
+        height: calc(100% - 32px);
+        object-fit: contain;
         display: block;
       }
       #resizeHandle {
@@ -293,15 +297,6 @@
       const resizeHandle =
         document.getElementById(
           "resizeHandle"
-        );
-      
-      const compareWindow =
-        document.getElementById(
-          'compareWindow'
-        );
-      const compareHeader =
-        document.getElementById(
-          'compareHeader'
         );
       let photos = [],
         current = 0,
@@ -772,6 +767,12 @@
               200,
               compareWindow.offsetWidth +
               e.movementX
+            ) + "px";
+          compareWindow.style.height =
+            Math.max(
+              150,
+              compareWindow.offsetHeight +
+              e.movementY
             ) + "px";
         }
         if (compareDrag) {
