@@ -65,6 +65,15 @@
         width: 100%;
         display: block;
       }
+      #resizeHandle {
+        width: 16px;
+        height: 16px;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        cursor: nwse-resize;
+        background: #ccc;
+      }
     </style>
   </head>
   <body>
@@ -262,6 +271,7 @@
         </button>
       </div>
       <img id="compareImg">
+      <div id="resizeHandle"></div>
     </div>
       <canvas id="cv"></canvas>
     <script>
@@ -269,6 +279,22 @@
         ctx = cv.getContext('2d');
 
       const statusElm = document.getElementById('status');
+      
+      const compareWindow =
+        document.getElementById(
+          "compareWindow"
+        );
+      
+      const compareHeader =
+        document.getElementById(
+          "compareHeader"
+        );
+      
+      const resizeHandle =
+        document.getElementById(
+          "resizeHandle"
+        );
+      
       const compareWindow =
         document.getElementById(
           'compareWindow'
@@ -305,6 +331,8 @@
       let compareDrag = false;
       let compareOffsetX = 0;
       let compareOffsetY = 0;
+      
+      let resizing = false;
       
       function showMsg(text) {
         statusElm.textContent = text;
@@ -365,6 +393,10 @@
           panel.style.display = "none";
         }
       }
+      resizeHandle.onmousedown =
+        () => {
+          resizing = true;
+        };
       compareHeader.onmousedown =
         (e) => {
           compareDrag = true;
@@ -734,6 +766,14 @@
         draw();
       };
       window.onmousemove = (e) => {
+        if (resizing) {
+          compareWindow.style.width =
+            Math.max(
+              200,
+              compareWindow.offsetWidth +
+              e.movementX
+            ) + "px";
+        }
         if (compareDrag) {
           compareWindow.style.left =
             (e.clientX - compareOffsetX)
@@ -758,6 +798,7 @@
         }
       };
       window.onmouseup = () => {
+        resizing = false;
         compareDrag = false;
       };
       cv.oncontextmenu = (e) => {
