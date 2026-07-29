@@ -453,8 +453,65 @@
           document.getElementById(
             "compareTitle"
           );
+        const c =
+          document.createElement("canvas");
+        c.width =
+          photos[i].img.width;
+        c.height =
+          photos[i].img.height;
+        const x =
+          c.getContext("2d");
+        x.drawImage(
+          photos[i].img,
+          0,
+          0
+        );
+        photos[i].excludeRects.forEach(r => {
+          x.fillStyle =
+            "rgba(255,0,0,0.2)";
+          x.fillRect(
+            r.x,
+            r.y,
+            r.w,
+            r.h
+          );
+          x.strokeStyle =
+            "red";
+          x.lineWidth = 3;
+          x.strokeRect(
+            r.x,
+            r.y,
+            r.w,
+            r.h
+          );
+        });
+        photos[i].excludePolygons.forEach(poly => {
+          x.beginPath();
+          x.moveTo(
+            poly[0].x,
+            poly[0].y
+          );
+          for (
+            let j = 1;
+            j < poly.length;
+            j++
+          ) {
+            x.lineTo(
+              poly[j].x,
+              poly[j].y
+            );
+          }
+          x.closePath();
+          x.fillStyle =
+            "rgba(255,0,0,0.2)";
+          x.fill();
+          x.strokeStyle =
+            "red";
+          x.lineWidth = 3;
+          x.stroke();
+        });
         imgElm.src =
-          photos[i].img.src;
+          c.toDataURL();
         title.textContent =
           photos[i].name;
         compareScale = 1;
