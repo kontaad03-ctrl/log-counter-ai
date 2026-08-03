@@ -113,6 +113,9 @@
         text-align: center;
       }
       /* ===== スマホ・タブレット用 ===== */
+      #mobileSettingsBtn {
+        display: none;
+      }
       #mobileToolbar {
         display: none;
       }
@@ -127,6 +130,20 @@
         }
         #desktopControls {
           display: none;
+        }
+        #mobileSettingsBtn {
+          display: block;
+          position: fixed;
+          top: 10px;
+          left: 10px;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(0,0,0,0.5);
+          color: white;
+          font-size: 24px;
+          z-index: 10000;
         }
         #mobileToolbar {
           display: flex;
@@ -157,6 +174,12 @@
     <div id="rotateNotice">
       📱 横向きにしてください
     </div>
+    <button
+      id="mobileSettingsBtn"
+      onclick="mobileSettings()"
+      >
+      ⚙
+    </button>
     <h3>俺の名は丸太カウンター！！！</h3>
     <div id="status"></div>
     <div id="desktopControls">
@@ -499,6 +522,18 @@
         if (result === "2") {
           togglePolygonMode();
         }
+      }
+      function mobileSettings() {
+        alert(
+          `設定画面
+          
+          今後ここへ
+          ・塗り色
+          ・枠色
+          ・マーカーサイズ
+          ・重なり許容度
+          を追加予定`
+        );
       }
       function mobileOpenFile() {
         document
