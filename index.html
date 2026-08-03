@@ -119,6 +119,22 @@
       #mobileToolbar {
         display: none;
       }
+      #mobileSettingsPanel {
+        display: none;
+        position: fixed;
+        top: 70px;
+        left: 10px;
+        width: 220px;
+        background: white;
+        border: 2px solid #666;
+        border-radius: 10px;
+        padding: 10px;
+        z-index: 10001;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      }
+      #mobileSettingsPanel button {
+        margin: 2px;
+      }
       @media (pointer: coarse) {
         canvas {
           width: 100%;
@@ -180,6 +196,36 @@
       >
       ⚙
     </button>
+    <div id="mobileSettingsPanel">
+      <b>塗り色</b>
+      <br>
+      <button onclick="setFill('transparent')">
+        透明
+      </button>
+      <button onclick="setFill('blue')">
+        青
+      </button>
+      <button onclick="setFill('red')">
+        赤
+      </button>
+      <hr>
+      <b>枠色</b>
+      <br>
+      <button onclick="setBorder('blue')">
+        青
+      </button>
+      <button onclick="setBorder('red')">
+        赤
+      </button>
+      <button onclick="setBorder('black')">
+        黒
+      </button>
+      <hr>
+      <button onclick="closeMobileSettings()">
+        閉じる
+      </button>
+    </div>
+
     <h3>俺の名は丸太カウンター！！！</h3>
     <div id="status"></div>
     <div id="desktopControls">
@@ -524,16 +570,19 @@
         }
       }
       function mobileSettings() {
-        alert(
-          `設定画面
-          
-          今後ここへ
-          ・塗り色
-          ・枠色
-          ・マーカーサイズ
-          ・重なり許容度
-          を追加予定`
-        );
+        const panel =
+          document.getElementById(
+            "mobileSettingsPanel"
+          );
+        panel.style.display =
+          panel.style.display === "block"
+          ? "none"
+          : "block";
+      }
+      function closeMobileSettings() {
+        document.getElementById(
+          "mobileSettingsPanel"
+        ).style.display = "none";
       }
       function mobileOpenFile() {
         document
