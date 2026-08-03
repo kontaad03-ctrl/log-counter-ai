@@ -776,18 +776,11 @@
           );
           return;
         }
-        alert(
-          "頂点数=" +
-          currentPolygon.length
+        excludePolygons.push(
+          [...currentPolygon]
         );
-        photos[current]
-          .excludePolygons
-          .push(
-            [...currentPolygon]
-          );
-        excludePolygons =
-          photos[current]
-          .excludePolygons;
+        photos[current].excludePolygons =
+          excludePolygons;
         currentPolygon = [];
         draw();
         alert("draw完了");
