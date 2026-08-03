@@ -199,31 +199,72 @@
     <div id="mobileSettingsPanel">
       <b>塗り色</b>
       <br>
-      <button onclick="setFill('transparent')">
+      <button id="mf_transparent"
+        onclick="mobileSetFill('transparent')">
         透明
       </button>
-      <button onclick="setFill('blue')">
+      <button id="mf_blue"
+        onclick="mobileSetFill('blue')">
         青
       </button>
-      <button onclick="setFill('red')">
+      <button id="mf_red"
+        onclick="mobileSetFill('red')">
         赤
       </button>
       <hr>
       <b>枠色</b>
       <br>
-      <button onclick="setBorder('blue')">
+      <button id="mb_blue"
+        onclick="mobileSetBorder('blue')">
         青
       </button>
-      <button onclick="setBorder('red')">
+      <button id="mb_red"
+        onclick="mobileSetBorder('red')">
         赤
       </button>
-      <button onclick="setBorder('black')">
+      <button id="mb_black"
+        onclick="mobileSetBorder('black')">
         黒
+      </button>
+      <hr>
+      <b>マーカーサイズ</b>
+      <br>
+      <input
+        type="range"
+        id="mobileMsize"
+        min="5"
+        max="60"
+        value="15"
+        >
+      <hr>
+      <b>番号サイズ</b>
+      <br>
+      <input
+        type="range"
+        id="mobileNsize"
+        min="20"
+        max="80"
+        value="40"
+        >
+      <hr>
+      <b>重なり許容度</b>
+      <br>
+      <input
+        type="range"
+        id="mobileNms"
+        min="10"
+        max="90"
+        value="50"
+        >
+      <hr>
+      <button onclick="toggleNumber()">
+        番号表示 ON/OFF
       </button>
       <hr>
       <button onclick="closeMobileSettings()">
         閉じる
       </button>
+      
     </div>
 
     <h3>俺の名は丸太カウンター！！！</h3>
@@ -603,6 +644,52 @@
           .forEach((x) => x.classList.remove('active'));
         document.getElementById('b_' + c).classList.add('active');
       }
+      function mobileSetFill(color){
+        setFill(color);
+        document
+          .querySelectorAll('[id^=mf_]')
+          .forEach(
+            x => x.classList.remove('active')
+          );
+        document
+          .getElementById(
+            'mf_' + color
+          )
+          .classList.add('active');
+      }
+      function mobileSetBorder(color){
+        setBorder(color);
+        document
+          .querySelectorAll('[id^=mb_]')
+          .forEach(
+            x => x.classList.remove('active')
+          );
+        document
+          .getElementById(
+            'mb_' + color
+          )
+          .classList.add('active');
+      }
+      mobileMsize.oninput = () => {
+        msize.value =
+          mobileMsize.value;
+        msize.oninput();
+      };
+      mobileNsize.oninput = () => {
+        nsize.value =
+          mobileNsize.value;
+        draw();
+      };
+      mobileNms.oninput = () => {
+        nms.value =
+          mobileNms.value;
+        updateNmsLabel();
+      };
+      function toggleNumber(){
+        showNumber =
+          !showNumber;
+        draw();
+      }
       function toggleExcludeMode() {
         excludeMode = !excludeMode;
         if (excludeMode) {
@@ -899,9 +986,11 @@
           ctx.font = 'bold ' + ns + 'px Arial';
           ctx.strokeStyle = 'white';
           ctx.lineWidth = 5;
+          if(showNumber){
           ctx.strokeText(i + 1, p.x + 18, p.y);
           ctx.fillStyle = 'black';
           ctx.fillText(i + 1, p.x + 18, p.y);
+          }
         });
         
         excludeRects.forEach(r => {
