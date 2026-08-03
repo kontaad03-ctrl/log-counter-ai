@@ -112,12 +112,21 @@
         justify-content: center;
         text-align: center;
       }
+      /* ===== スマホ・タブレット用 ===== */
       #mobileToolbar {
         display: none;
       }
-      @media (max-width: 768px) {
+      @media (pointer: coarse) {
+        canvas {
+          width: 100%;
+          height: auto;
+          margin-bottom: 80px;
+        }
         body {
           margin: 4px;
+        }
+        #desktopControls {
+          display: none;
         }
         #mobileToolbar {
           display: flex;
@@ -125,16 +134,21 @@
           bottom: 0;
           left: 0;
           right: 0;
-          height: 60px;
+          height: 70px;
           background: #222;
           z-index: 9999;
+          border-top: 2px solid #666;
         }
         #mobileToolbar button {
           flex: 1;
-          font-size: 18px;
+          font-size: 22px;
           border: none;
-          color: white;
           background: #444;
+          color: white;
+          font-weight: bold;
+        }
+        #mobileToolbar button:active {
+          background: #ff9800;
         }
       }
     </style>
@@ -145,6 +159,7 @@
     </div>
     <h3>俺の名は丸太カウンター！！！</h3>
     <div id="status"></div>
+    <div id="desktopControls">
     <input type="file" id="file" accept="image/*" multiple /><input
       type="text"
       id="fname"
@@ -349,6 +364,7 @@
       左クリック=追加 / 長押しドラッグ=移動 / 右クリック=削除 /
       Ctrl+ホイール=ズーム
     </div>
+      </div>
     <div id="compareWindow">
       <div id="compareHeader">
         <span id="compareTitle">
@@ -364,13 +380,16 @@
       <canvas id="cv"></canvas>
     <div id="mobileToolbar">
       <button onclick="testInference()">
-        🤖
+        🤖<br>
+        検出
       </button>
       <button onclick="mobileExcludeMenu()">
-        🚫
+        🚫<br>
+        除外
       </button>
       <button onclick="saveCurrent()">
-        💾
+        💾<br>
+        保存
       </button>
     </div>
     <script>
@@ -432,10 +451,9 @@
       let compareX = 0;
       let compareY = 0;
       const isMobile =
-        /Android|iPhone|iPad/i
-        .test(
-          navigator.userAgent
-        );
+        window.matchMedia(
+          "(pointer: coarse)"
+        ).matches;
       let compareImgDrag = false;
       let compareImgStartX = 0;
       let compareImgStartY = 0;
