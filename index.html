@@ -767,6 +767,7 @@
         );
       }
       function finishPolygon(){
+        alert("finishPolygon開始");
         if(
           currentPolygon.length < 3
         ){
@@ -775,6 +776,10 @@
           );
           return;
         }
+        alert(
+          "頂点数=" +
+          currentPolygon.length
+        );
         photos[current]
           .excludePolygons
           .push(
@@ -785,6 +790,7 @@
           .excludePolygons;
         currentPolygon = [];
         draw();
+        alert("draw完了");
       }
       function cancelPolygon(){
         currentPolygon = [];
