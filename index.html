@@ -530,6 +530,10 @@
           ❌<br>
           取消
         </button>
+        <button onclick="exitPolygonMode()">
+          🔙<br>
+          終了
+        </button>
       </div>
     </div>
     <script>
@@ -780,16 +784,13 @@
           photos[current]
           .excludePolygons;
         currentPolygon = [];
-        polygonMode = false;
-        setMobileMode(
-          "normal"
-        );
-        showMsg(
-          "通常モード"
-        );
         draw();
       }
       function cancelPolygon(){
+        currentPolygon = [];
+        draw();
+      }
+      function exitPolygonMode(){
         currentPolygon = [];
         polygonMode = false;
         setMobileMode(
