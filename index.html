@@ -379,6 +379,10 @@
     </div>
       <canvas id="cv"></canvas>
     <div id="mobileToolbar">
+      <button onclick="mobileOpenFile()">
+        📂<br>
+        読込
+      </button>
       <button onclick="testInference()">
         🤖<br>
         検出
@@ -495,6 +499,11 @@
         if (result === "2") {
           togglePolygonMode();
         }
+      }
+      function mobileOpenFile() {
+        document
+          .getElementById("file")
+          .click();
       }
       function setFill(c) {
         fillColor = c;
