@@ -753,7 +753,9 @@
           ? "polygon"
           : "normal"
         );
-        currentPolygon = [];
+        if(polygonMode){
+          currentPolygon = [];
+        }
         showMsg(
           polygonMode
           ? "🔺 ポリゴン除外モード"
@@ -769,16 +771,21 @@
           );
           return;
         }
-        excludePolygons.push(
-          [...currentPolygon]
-        );
         photos[current]
-          .excludePolygons =
-          excludePolygons;
+          .excludePolygons
+          .push(
+            [...currentPolygon]
+          );
+        excludePolygons =
+          photos[current]
+          .excludePolygons;
         currentPolygon = [];
         polygonMode = false;
         setMobileMode(
           "normal"
+        );
+        showMsg(
+          "通常モード"
         );
         draw();
       }
@@ -787,6 +794,9 @@
         polygonMode = false;
         setMobileMode(
           "normal"
+        );
+        showMsg(
+          "通常モード"
         );
         draw();
       }
