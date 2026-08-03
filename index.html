@@ -2,6 +2,10 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+      />
     <title>俺の名は丸太カウンター！！！</title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -95,9 +99,50 @@
         border-bottom: 2px solid #999;
         transform: rotate(0deg);
       }
+      /* ===== スマホ用 ===== */
+      #rotateNotice {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: #222;
+        color: white;
+        font-size: 24px;
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      #mobileToolbar {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        body {
+          margin: 4px;
+        }
+        #mobileToolbar {
+          display: flex;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 60px;
+          background: #222;
+          z-index: 9999;
+        }
+        #mobileToolbar button {
+          flex: 1;
+          font-size: 18px;
+          border: none;
+          color: white;
+          background: #444;
+        }
+      }
     </style>
   </head>
   <body>
+    <div id="rotateNotice">
+      📱 横向きにしてください
+    </div>
     <h3>俺の名は丸太カウンター！！！</h3>
     <div id="status"></div>
     <input type="file" id="file" accept="image/*" multiple /><input
@@ -317,6 +362,17 @@
       <div id="resizeHandle"></div>
     </div>
       <canvas id="cv"></canvas>
+    <div id="mobileToolbar">
+      <button onclick="testInference()">
+        🤖
+      </button>
+      <button onclick="mobileExcludeMenu()">
+        🚫
+      </button>
+      <button onclick="saveCurrent()">
+        💾
+      </button>
+    </div>
     <script>
       const cv = document.getElementById('cv'),
         ctx = cv.getContext('2d');
@@ -375,6 +431,11 @@
       let compareScale = 1;
       let compareX = 0;
       let compareY = 0;
+      const isMobile =
+        /Android|iPhone|iPad/i
+        .test(
+          navigator.userAgent
+        );
       let compareImgDrag = false;
       let compareImgStartX = 0;
       let compareImgStartY = 0;
@@ -386,6 +447,36 @@
       }
       function hideMsg() {
         statusElm.style.display = 'none';
+      }
+      function checkOrientation() {
+        const notice =
+          document.getElementById(
+            "rotateNotice"
+          );
+        if (
+          isMobile &&
+          window.innerHeight >
+          window.innerWidth
+        ) {
+          notice.style.display =
+            "flex";
+        } else {
+          notice.style.display =
+            "none";
+        }
+      }
+      function mobileExcludeMenu() {
+        const result = prompt(
+          `除外メニュー
+          1 = 矩形除外
+          2 = ポリゴン除外`
+        );
+        if (result === "1") {
+          toggleExcludeMode();
+        }
+        if (result === "2") {
+          togglePolygonMode();
+        }
       }
       function setFill(c) {
         fillColor = c;
@@ -1263,6 +1354,11 @@
       }
 
       loadModel();
+      checkOrientation();
+      window.addEventListener(
+        "resize",
+        checkOrientation
+      );
 
       async function testInference() {
         
