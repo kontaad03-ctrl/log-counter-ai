@@ -334,7 +334,7 @@
     <br />
     <div id="tabs"></div>
     <br />塗り:<button
-      id="f_transparent"
+      id="f_blue"
       class="colorbtn active"
       onclick="setFill('transparent')"
     >
@@ -351,7 +351,7 @@
       白</button
     ><button id="b_black" class="colorbtn" onclick="setBorder('black')">
       黒</button
-    ><button id="b_red" class="colorbtn active" onclick="setBorder('red')">
+    ><button id="b_blue" class="colorbtn active" onclick="setBorder('red')">
       赤</button
     ><button id="b_blue" class="colorbtn" onclick="setBorder('blue')">青</button
     ><br />
@@ -444,8 +444,8 @@
         img = new Image(),
         pts = [],
         scale = 1,
-        fillColor = 'transparent',
-        borderColor = 'red',
+        fillColor = 'blue',
+        borderColor = 'blue',
         drag = -1,
         selected = -1,
         holdTimer = null,
