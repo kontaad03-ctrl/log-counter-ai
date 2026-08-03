@@ -776,11 +776,19 @@
           );
           return;
         }
+        alert(
+          "photos=" + photos.length
+        );
+        alert(
+          "current=" + current
+        );
         excludePolygons.push(
           [...currentPolygon]
         );
+        alert("push成功");
         photos[current].excludePolygons =
           excludePolygons;
+        alert("代入成功");
         currentPolygon = [];
         draw();
         alert("draw完了");
