@@ -1218,6 +1218,25 @@
 
         count.textContent =
           '全写真合計:' + photos.reduce((s, p) => s + p.pts.length, 0) + '本';
+        if(isMobile){
+          const total =
+            photos.reduce(
+              (s, p) => s + p.pts.length,
+              0
+            );
+          document.getElementById(
+            "photoIndex"
+          ).textContent =
+            "📷 " +
+            (current + 1) +
+            " / " +
+            photos.length +
+            "　この写真：" +
+            pts.length +
+            "本　総計：" +
+            total +
+            "本";
+        }
 
         zoom.textContent = '倍率:' + Math.round(scale * 100) + '%';
 
