@@ -182,15 +182,17 @@
           color: white;
           font-weight: bold;
         }
-          #normalBar,
-          #polygonBar {
+          #normalBar {
             display: flex;
             width: 100%;
           }
-          #normalBar button,
-          #polygonBar button {
-            flex: 1;
-          }
+        #polygonBar {
+          width: 100%;
+        }
+        #normalBar button,
+        #polygonBar button {
+          flex: 1;
+        }
         #mobileToolbar button:active {
           background: #ff9800;
         }
@@ -509,7 +511,7 @@
           🤖<br>
           検出
         </button>
-        <button onclick="mobileExcludeMenu()">
+        <button onclick="startPolygonMode()">
           🚫<br>
           除外
         </button>
@@ -626,19 +628,6 @@
         } else {
           notice.style.display =
             "none";
-        }
-      }
-      function mobileExcludeMenu() {
-        const result = prompt(
-          `除外メニュー
-          1 = 矩形除外
-          2 = ポリゴン除外`
-        );
-        if (result === "1") {
-          toggleExcludeMode();
-        }
-        if (result === "2") {
-          togglePolygonMode();
         }
       }
       function mobileSettings() {
@@ -766,6 +755,18 @@
           : "通常モード"
         );
       }
+      function startPolygonMode(){
+        polygonMode = true;
+        excludeMode = false;
+        currentPolygon = [];
+        setMobileMode(
+          "polygon"
+        );
+        showMsg(
+          "🔺 ポリゴン除外モード"
+        );
+        draw();
+      }
       function finishPolygon(){
         if(
           currentPolygon.length < 3
@@ -775,9 +776,14 @@
           );
           return;
         }
-        excludePolygons.push(
-          [...currentPolygon]
-        );
+        photos[current]
+          .excludePolygons
+          .push(
+            [...currentPolygon]
+          );
+        excludePolygons =
+          photos[current]
+          .excludePolygons;
         currentPolygon = [];
         draw();
         showMsg(
@@ -1433,18 +1439,10 @@
       );
       cv.ondblclick = () => {
         if (
-          polygonMode &&
-          currentPolygon.length >= 3
+          !isMobile &&
+          polygonMode
         ) {
-          excludePolygons.push([
-            ...currentPolygon
-          ]);
-          
-          photos[current].excludePolygons =
-            excludePolygons;
-          
-          currentPolygon = [];
-          draw();
+          finishPolygon();
           return;
         }
         scale = 1;
