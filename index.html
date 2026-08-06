@@ -313,8 +313,13 @@
       multiple
       style="display:none"
       onchange="loadPhotos(event)"
-      >
-    <button onclick="document.getElementById('file').click()">📷写真読込</button>
+      />
+      <button
+        type="button"
+        onclick="document.getElementById('file').click()"
+        >
+        📷写真読込
+      </button>
     <button onclick="toggleHelp()">❓ 使い方</button>
     <input
       type="file"
