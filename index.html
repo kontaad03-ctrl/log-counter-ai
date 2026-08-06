@@ -1731,6 +1731,8 @@
       );
 
       async function testInference() {
+
+        console.log("session=", session);
         
         if (!img.src) {
           alert("先に画像を選択してください");
@@ -1784,6 +1786,8 @@
           data,
           [1, 3, 1280, 1280]
         );
+        
+        console.log("run直前");
         
         const results = await session.run({
           images: tensor
