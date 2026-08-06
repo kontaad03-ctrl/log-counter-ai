@@ -1741,14 +1741,39 @@
       async function loadProject(e) {
         const file =
           e.target.files[0];
-        if (!file) {
-          return;
-        }
+        if (!file) return;
         const json =
           await file.text();
         const projectData =
           JSON.parse(json);
-        console.log(projectData);
+        photos = [];
+        for (const p of projectData.photos) {
+          const im = new Image();
+          await new Promise(resolve => {
+            im.onload = resolve;
+            im.src = p.imageData;
+          });
+          photos.push({
+            name: p.name,
+            img: im,
+            pts: p.pts,
+            excludeRects: p.excludeRects,
+            excludePolygons: p.excludePolygons
+          });
+        }
+        confThreshold.value =
+          projectData.confidence;
+        updateConfLabel();
+        nms.value =
+          projectData.nms;
+        updateNmsLabel();
+        renderTabs();
+        if (photos.length) {
+          switchTab(0);
+        }
+        showMsg(
+          "✅ プロジェクト読込完了"
+        );
       }
       async function exportCSV() {
         let rows = ['画像名,本数'];
