@@ -314,6 +314,14 @@
       style="width: 220px"
     />
     <button onclick="toggleHelp()">❓ 使い方</button>
+    <input
+      type="file"
+      id="projectFile"
+      accept=".omc"
+      style="display:none"
+      onchange="loadProject(event)"
+      >
+      <button　onclick="projectFile.click()">📂プロジェクト読込</button>  
     <button onclick="saveCurrent()">名前を付けて保存</button>
     <button onclick="saveAll()">一括保存</button>
     <button onclick="exportCSV()">CSV保存</button>
@@ -1729,6 +1737,18 @@
         showMsg(
           "✅ プロジェクト保存完了"
         );
+      }
+      async function loadProject(e) {
+        const file =
+          e.target.files[0];
+        if (!file) {
+          return;
+        }
+        const json =
+          await file.text();
+        const projectData =
+          JSON.parse(json);
+        console.log(projectData);
       }
       async function exportCSV() {
         let rows = ['画像名,本数'];
