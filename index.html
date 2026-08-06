@@ -281,6 +281,16 @@
         value="50"
         >
       <hr>
+      <b>検出信頼度</b>
+      <br>
+      <input
+        type="range"
+        id="mobileConfThreshold"
+        min="10"
+        max="90"
+        value="30"
+        >
+      <hr>
       <button onclick="toggleNumber()">
         番号表示 ON/OFF
       </button>
@@ -749,6 +759,11 @@
         nms.value =
           mobileNms.value;
         updateNmsLabel();
+      };
+      mobileConfThreshold.oninput = () => {
+        confThreshold.value =
+          mobileConfThreshold.value;
+        updateConfLabel();
       };
       function toggleNumber(){
         showNumber =
