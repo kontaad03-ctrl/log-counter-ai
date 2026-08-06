@@ -1672,22 +1672,63 @@
           console.error(err);
         }
       }
-      function saveProject() {
-        const now = new Date();
+      async function saveProject() {
+        const savePhotos = photos.map(p => {
+          const canvas =
+            document.createElement("canvas");
+          canvas.width =
+            p.img.width;
+          canvas.height =
+            p.img.height;
+          const x =
+            canvas.getContext("2d");
+          x.drawImage(
+            p.img,
+            0,
+            0
+          );
+          return {
+            name: p.name,
+            imageData:
+              canvas.toDataURL("image/png"),
+            pts: p.pts,
+            excludeRects:
+              p.excludeRects,
+            excludePolygons:
+              p.excludePolygons
+          };
+        });
         const projectData = {
-          createdAt: now.toLocaleString(),
-          confidence: confThreshold.value,
-          nms: nms.value,
+          createdAt:
+            new Date().toLocaleString(),
+          confidence:
+            confThreshold.value,
+          nms:
+            nms.value,
           totalCount:
             photos.reduce(
               (s, p) => s + p.pts.length,
               0
             ),
-          photos: photos
+          photos:
+            savePhotos
         };
         const json =
           JSON.stringify(projectData);
-        console.log(json);
+        const blob = new Blob(
+          [json],
+          {
+            type:
+              "application/json"
+          }
+        );
+        await saveBlob(
+          blob,
+          "project.omc"
+        );
+        showMsg(
+          "✅ プロジェクト保存完了"
+        );
       }
       async function exportCSV() {
         let rows = ['画像名,本数'];
