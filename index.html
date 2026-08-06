@@ -306,6 +306,14 @@
     </div>
     <div id="status"></div>
     <div id="desktopControls">
+    <input
+      type="file"
+      id="file"
+      accept="image/*"
+      multiple
+      style="display:none"
+      onchange="loadPhotos(event)"
+      >
     <button onclick="document.getElementById('file').click()">📷写真読込</button>
     <button onclick="toggleHelp()">❓ 使い方</button>
     <input
@@ -1047,7 +1055,7 @@
         pts = photos[current].pts;
         draw();
       };
-      file.onchange = async (e) => {
+      async function loadPhotos(e) {
         photos = [];
         for (const f of [...e.target.files]) {
           const im = new Image();
