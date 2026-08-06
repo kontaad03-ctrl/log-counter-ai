@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1"
       />
-    <title>俺の名は丸太カウンター！！！</title>
+    <title>マルタ・カゾエール（仮称）</title>
 
 
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
@@ -300,7 +300,7 @@
       
     </div>
 
-    <h3>俺の名は丸太カウンター！！！</h3>
+    <h3>マルタ・カゾエール（仮称）</h3>
     <div id="photoIndex">
       📷 0 / 0
     </div>
@@ -337,6 +337,7 @@
     <button onclick="toggleExcludeMode()">🚫 矩形除外</button>
     <button onclick="togglePolygonMode()">🔺 ポリゴン除外</button>
     <button onclick="testInference()">🤖 自動検出</button>
+    <button onclick="showHistory()">🕘履歴</button>
 
     <div 
       class="help"
@@ -469,6 +470,11 @@
       35.「CSV保存」で集計結果を出力できます
     
     </div>
+    <div
+      id="historyPanel"
+      class="help"
+      style="display:none">
+      </div>  
     <br />
     <div id="tabs"></div>
     <br />塗り:<button
@@ -876,6 +882,39 @@
         } else {
           panel.style.display = "none";
         }
+      }
+      function showHistory() {
+        const panel =
+          document.getElementById(
+            "historyPanel"
+          );
+        let historyList =
+          JSON.parse(
+            localStorage.getItem(
+              "omc_history"
+            ) || "[]"
+          );
+        if (
+          historyList.length === 0
+        ) {
+          panel.innerHTML =
+            "履歴なし";
+        } else {
+          panel.innerHTML =
+            historyList.map(
+              (h, i) =>
+                `<button
+                onclick="loadHistory(${i})">
+                ${h.createdAt}
+                </button>
+                <br>`
+            ).join("");
+        }
+        panel.style.display =
+          panel.style.display ===
+          "block"
+          ? "none"
+          : "block";
       }
       resizeHandle.onmousedown =
         (e) => {
@@ -1612,6 +1651,27 @@
           photos:
             savePhotos
         };
+        let historyList =
+          JSON.parse(
+            localStorage.getItem(
+              "omc_history"
+            ) || "[]"
+          );
+        historyList.unshift(
+          projectData
+        );
+        if (
+          historyList.length > 30
+        ) {
+          historyList =
+            historyList.slice(0,30);
+        }
+        localStorage.setItem(
+          "omc_history",
+          JSON.stringify(
+            historyList
+          )
+        );
         const json =
           JSON.stringify(projectData);
         const blob = new Blob(
@@ -1629,14 +1689,7 @@
           "✅ プロジェクト保存完了"
         );
       }
-      async function loadProject(e) {
-        const file =
-          e.target.files[0];
-        if (!file) return;
-        const json =
-          await file.text();
-        const projectData =
-          JSON.parse(json);
+      async function restoreProject(projectData) {
         photos = [];
         for (const p of projectData.photos) {
           const im = new Image();
@@ -1662,8 +1715,36 @@
         if (photos.length) {
           switchTab(0);
         }
+      }
+      async function loadProject(e) {
+        const file =
+          e.target.files[0];
+        if (!file) return;
+        const json =
+          await file.text();
+        const projectData =
+          JSON.parse(json);
+        await restoreProject(
+          projectData
+        );
         showMsg(
           "✅ プロジェクト読込完了"
+        );
+      }
+      async function loadHistory(
+        index
+      ) {
+        const historyList =
+          JSON.parse(
+            localStorage.getItem(
+              "omc_history"
+            ) || "[]"
+          );
+        await restoreProject(
+          historyList[index]
+        );
+        showMsg(
+          "✅ 履歴読込完了"
         );
       }
       async function exportCSV() {
