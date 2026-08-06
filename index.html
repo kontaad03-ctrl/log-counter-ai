@@ -478,6 +478,15 @@
       max="60"
       value="15"
     />
+    検出信頼度
+    <input
+      type="range"
+      id="confThreshold"
+      min="10"
+      max="90"
+      value="30"
+    />
+    <span id="confLabel">30%</span>
     重なり許容度
     <input
       type="range"
@@ -1008,6 +1017,10 @@
             "grab";
         }
       );
+      function updateConfLabel() {
+        confLabel.textContent =
+          confThreshold.value + "%";
+      }
       function updateNmsLabel() {
         nmsLabel.textContent =
           (nms.value / 100).toFixed(2);
@@ -1693,6 +1706,10 @@
         
         nms.oninput = updateNmsLabel;
 
+        updateConfLabel();
+        
+        confThreshold.oninput = updateConfLabel;
+
         try {
           session = await ort.InferenceSession.create('./log_counter_v6.onnx');
 
@@ -1785,7 +1802,7 @@
           
           const conf = d[i + N * 4];
           
-          if (conf >= 0.3) {
+          if (conf >= confThreshold.value / 100) {
             const candidate = {
               x: d[i],
               y: d[i + N],
