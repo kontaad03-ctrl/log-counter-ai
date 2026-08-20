@@ -1210,7 +1210,13 @@
           };
         });
         const projectData = {
-          createdAt: new Date().toLocaleString(),
+          createdAt: new Date().toLocaleString("ja-JP", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
           confidence: confThreshold.value,
           nms: nms.value,
           totalCount: photos.reduce((s, p) => s + p.pts.length, 0),
@@ -1256,6 +1262,13 @@
         const projectData = JSON.parse(json);
         await restoreProject(projectData);
         showMsg("✅ プロジェクト読込完了");
+      }
+      async function loadHistory(index) {
+        const historyList = await getProjectHistory();
+
+        await restoreProject(historyList[index]);
+
+        showMsg("✅ 履歴読込完了");
       }
       async function exportCSV() {
         let rows = ["画像名,本数"];
@@ -1348,6 +1361,38 @@
 
           request.onerror = reject;
         });
+      }
+
+      async function getProjectHistory() {
+        const projects = await getProjects();
+
+        return projects.reverse();
+      }
+
+      async function showHistory() {
+        const panel = document.getElementById("historyPanel");
+
+        const historyList = await getProjectHistory();
+
+        if (historyList.length === 0) {
+          panel.innerHTML = "履歴なし";
+        } else {
+          panel.innerHTML = historyList
+            .map(
+              (h, i) =>
+                `<button
+          onclick="loadHistory(${i})">
+
+          ${h.createdAt}
+          （${h.totalCount}本）
+
+        </button><br>`,
+            )
+            .join("");
+        }
+
+        panel.style.display =
+          panel.style.display === "block" ? "none" : "block";
       }
 
       async function loadModel() {
