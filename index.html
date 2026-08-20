@@ -2,12 +2,8 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-      />
-    <title>マルタ・カゾエール（仮称）</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>マルタ・カゾエール</title>
 
     <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 
@@ -59,7 +55,7 @@
         overflow: hidden;
         background: white;
         border: 2px solid #666;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         z-index: 9999;
       }
       #compareHeader {
@@ -134,7 +130,7 @@
         border-radius: 10px;
         padding: 10px;
         z-index: 10001;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
       }
       #mobileSettingsPanel button {
         margin: 2px;
@@ -168,7 +164,7 @@
           height: 50px;
           border-radius: 50%;
           border: none;
-          background: rgba(0,0,0,0.5);
+          background: rgba(0, 0, 0, 0.5);
           color: white;
           font-size: 24px;
           z-index: 10000;
@@ -192,10 +188,10 @@
           color: white;
           font-weight: bold;
         }
-          #normalBar {
-            display: flex;
-            width: 100%;
-          }
+        #normalBar {
+          display: flex;
+          width: 100%;
+        }
         #polygonBar {
           width: 100%;
         }
@@ -210,442 +206,351 @@
     </style>
   </head>
   <body>
-    <div id="rotateNotice">
-      📱 横向きにしてください
-    </div>
-    <button
-      id="mobileSettingsBtn"
-      onclick="mobileSettings()"
-      >
-      ⚙
-    </button>
+    <div id="rotateNotice">📱 横向きにしてください</div>
+    <button id="mobileSettingsBtn" onclick="mobileSettings()">⚙</button>
     <div id="mobileSettingsPanel">
       <b>塗り色</b>
-      <br>
-      <button id="mf_transparent"
-        onclick="mobileSetFill('transparent')">
+      <br />
+      <button id="mf_transparent" onclick="mobileSetFill('transparent')">
         透明
       </button>
-      <button id="mf_blue"
-        onclick="mobileSetFill('blue')">
-        青
-      </button>
-      <button id="mf_red"
-        onclick="mobileSetFill('red')">
-        赤
-      </button>
-      <hr>
+      <button id="mf_blue" onclick="mobileSetFill('blue')">青</button>
+      <button id="mf_red" onclick="mobileSetFill('red')">赤</button>
+      <hr />
       <b>枠色</b>
-      <br>
-      <button id="mb_blue"
-        onclick="mobileSetBorder('blue')">
-        青
-      </button>
-      <button id="mb_red"
-        onclick="mobileSetBorder('red')">
-        赤
-      </button>
-      <button id="mb_black"
-        onclick="mobileSetBorder('black')">
-        黒
-      </button>
-      <hr>
+      <br />
+      <button id="mb_blue" onclick="mobileSetBorder('blue')">青</button>
+      <button id="mb_red" onclick="mobileSetBorder('red')">赤</button>
+      <button id="mb_black" onclick="mobileSetBorder('black')">黒</button>
+      <hr />
       <b>マーカーサイズ</b>
-      <br>
-      <input
-        type="range"
-        id="mobileMsize"
-        min="5"
-        max="60"
-        value="15"
-        >
-      <hr>
+      <br />
+      <input type="range" id="mobileMsize" min="5" max="60" value="15" />
+      <hr />
       <b>番号サイズ</b>
-      <br>
-      <input
-        type="range"
-        id="mobileNsize"
-        min="20"
-        max="80"
-        value="40"
-        >
-      <hr>
+      <br />
+      <input type="range" id="mobileNsize" min="20" max="80" value="40" />
+      <hr />
       <b>重なり許容度</b>
-      <br>
-      <input
-        type="range"
-        id="mobileNms"
-        min="10"
-        max="90"
-        value="50"
-        >
-      <hr>
+      <br />
+      <input type="range" id="mobileNms" min="10" max="90" value="50" />
+      <hr />
       <b>検出信頼度</b>
-      <br>
+      <br />
       <input
         type="range"
         id="mobileConfThreshold"
         min="10"
         max="90"
         value="30"
-        >
-      <hr>
-      <button onclick="toggleNumber()">
-        番号表示 ON/OFF
-      </button>
-      <hr>
-      <button onclick="closeMobileSettings()">
-        閉じる
-      </button>
-      
+      />
+      <hr />
+      <button onclick="toggleNumber()">番号表示 ON/OFF</button>
+      <hr />
+      <button onclick="closeMobileSettings()">閉じる</button>
     </div>
 
-    <h3>マルタ・カゾエール（仮称）</h3>
-    <div id="photoIndex">
-      📷 0 / 0
-    </div>
+    <h3>マルタ・カゾエール</h3>
+    <div id="photoIndex">📷 0 / 0</div>
     <div id="status"></div>
     <div id="desktopControls">
-    <input
-      type="file"
-      id="file"
-      accept="image/*"
-      multiple
-      style="display:none"
-      onchange="loadPhotos(event)"
+      <input
+        type="file"
+        id="file"
+        accept="image/*"
+        multiple
+        style="display: none"
+        onchange="loadPhotos(event)"
       />
-      <button
-        type="button"
-        onclick="document.getElementById('file').click()"
-        >
+      <button type="button" onclick="document.getElementById('file').click()">
         📷写真読込
       </button>
-    <button onclick="toggleHelp()">❓ 使い方</button>
-    <input
-      type="file"
-      id="projectFile"
-      accept=".omc"
-      style="display:none"
-      onchange="loadProject(event)"
-      >
-      <button onclick="document.getElementById('projectFile').click()">📂プロジェクト読込</button> 
-    <button onclick="exportCSV()">CSV保存</button>
-    <button onclick="saveProject()">💾プロジェクト保存</button>
-    <button onclick="undoLast()">↩ 元に戻す</button>
-    <button onclick="clearCurrent()">🚮 マーカーを全削除</button>
-    <button onclick="toggleNumber()">番号ON/OFF</button>
-    <button onclick="toggleExcludeMode()">🚫 矩形除外</button>
-    <button onclick="togglePolygonMode()">🔺 ポリゴン除外</button>
-    <button onclick="testInference()">🤖 自動検出</button>
-    <button onclick="showHistory()">🕘履歴</button>
+      <button onclick="toggleHelp()">❓ 使い方</button>
+      <input
+        type="file"
+        id="projectFile"
+        accept=".omc"
+        style="display: none"
+        onchange="loadProject(event)"
+      />
+      <button onclick="document.getElementById('projectFile').click()">
+        📂プロジェクト読込
+      </button>
+      <button onclick="exportCSV()">CSV保存</button>
+      <button onclick="saveProject()">💾プロジェクト保存</button>
+      <button onclick="undoLast()">↩ 元に戻す</button>
+      <button onclick="clearCurrent()">🚮 マーカーを全削除</button>
+      <button onclick="toggleNumber()">番号ON/OFF</button>
+      <button onclick="toggleExcludeMode()">🚫 矩形除外</button>
+      <button onclick="togglePolygonMode()">🔺 ポリゴン除外</button>
+      <button onclick="testInference()">🤖 自動検出</button>
+      <button onclick="showHistory()">🕘履歴</button>
 
-    <div 
-      class="help"
-      id="helpPanel">
-      <b>🚀 クイックスタート</b><br><br>
-      📂 写真選択
-      <br>
-      ↓
-      <br>
-      🤖 自動検出
-      <br>
-      ↓
-      <br>
-      ✏ マーカー手修正
-      <br>
-      ↓
-      <br>
-      💾 保存
-      <br><br>
-      💡 検出したくない範囲がある場合は
-      <br>
-      🚫 矩形除外
-      <br>
-      🔺 ポリゴン除外
-      <br>
-      をご利用ください。
-      <br>
-      その際に、 他の写真の除外設定を参考にしたい場合は、
-      <br>
-      タブを右クリックすると比較画像を表示できます。
-      <hr>
-      
-      <b>📖 クイックマニュアル</b>
-      <br><br>
-      
-      ■ 写真の読み込み
-      <br>
-      01.「ファイルの選択」で写真を選択します（複数選択可）
-      <br>
-      02.タブをクリックすると写真を切り替えできます
-      
-      <br><br>
-      
-      ■ 自動検出
-      <br>
-      03.「🤖 自動検出」で丸太を自動検出します
-      <br>
-      04.「重なり許容度」で検出結果を調整できます（デフォルト設定値だと同じ丸太にマーカーが複数ついたりする場合があるので、その時は許容度を下げて再度自動検出してネ）
-      <br>
-      05.必要に応じて手動で修正してください
-      
-      <br><br>
-      
-      ■ マーカー編集
-      <br>
-      06.左クリックでマーカーを追加します
-      <br>
-      07.長押しドラッグで移動できます
-      <br>
-      08.右クリックで削除できます
-      <br>
-      09.「↩ 元に戻す」で直前の操作を取り消せます
-      <br>
-      10.「🚮 マーカーを全削除」で現在の写真のマーカーを削除できます
-      
-      <br><br>
-      
-      ■ 除外機能
-      <br>
-      11.「🚫 矩形除外」を押すと除外エリアモードになります
-      <br>
-      12.ドラッグで矩形の除外範囲を作成できます
-      <br>
-      13.除外エリア内はAI検出対象から除外されます
-      <br>
-      14.除外エリアは右クリックで削除できます
-      <br>
-      15.通常の操作に戻る場合は「🚫 矩形除外」をもう一度押してください
-      
-      <br><br>
-      16.「🔺 ポリゴン除外」を押すとポリゴン除外モードになります
-      <br>
-      17.左クリックで頂点を追加します
-      <br>
-      18.ダブルクリックでポリゴンを確定します
-      <br>
-      19.ポリゴン内はAI検出対象から除外されます
-      <br>
-      20.ポリゴンは右クリックで削除できます
-      <br>
-      21.通常の操作に戻る場合は「🔺 ポリゴン除外」をもう一度押してください
-      
-      <br><br>
-      
-      ■ 表示操作
-      <br>
-      22.マーカーサイズを変更できます
-      <br>
-      23.番号サイズを変更できます
-      <br>
-      24.Ctrl＋マウスホイールで拡大・縮小できます
+      <div class="help" id="helpPanel">
+        <b>🚀 クイックスタート</b><br /><br />
+        📂 写真選択
+        <br />
+        ↓
+        <br />
+        🤖 自動検出
+        <br />
+        ↓
+        <br />
+        ✏ マーカー手修正
+        <br />
+        ↓
+        <br />
+        💾 保存
+        <br /><br />
+        💡 検出したくない範囲がある場合は
+        <br />
+        🚫 矩形除外
+        <br />
+        🔺 ポリゴン除外
+        <br />
+        をご利用ください。
+        <br />
+        その際に、 他の写真の除外設定を参考にしたい場合は、
+        <br />
+        タブを右クリックすると比較画像を表示できます。
+        <hr />
 
-      <br><br>
-      ■ 比較画像機能
-      <br>
-      25.他の写真タブを右クリックすると比較画像を表示できます
-      <br>
-      26.比較画像には、その写真で設定済みの除外矩形・除外ポリゴンが表示されます
-      <br>
-      27.過去に設定した除外範囲を確認しながら現在の写真の除外設定ができます
-      <br>
-      28.比較画像はマウスホイールで拡大・縮小できます
-      <br>
-      29.比較画像はドラッグして上下左右へ移動できます
-      <br>
-      30.比較画像ウィンドウはドラッグして移動できます
-      <br>
-      31.比較画像ウィンドウ右下のハンドルをドラッグするとサイズ変更できます
-      <br>
-      32.比較画像右上の「✕」で閉じることができます
-      
-      <br><br>
-      
-      ■ 保存
-      <br>
-      33.「💾プロジェクト保存」で作業内容を保存できます
-      <br>
-      34.「📂プロジェクト読込」で保存済み案件を再開できます
-      <br>
-      35.「CSV保存」で集計結果を出力できます
-    
-    </div>
-    <div
-      id="historyPanel"
-      class="help"
-      style="display:none">
-      </div>  
-    <br />
-    <div id="tabs"></div>
-    <br />塗り:<button
-      id="f_transparent"
-      class="colorbtn"
-      onclick="setFill('transparent')"
-    >
-      透明</button
-    ><button id="f_white" class="colorbtn" onclick="setFill('white')">白</button
-    ><button id="f_black" class="colorbtn" onclick="setFill('black')">黒</button
-    ><button id="f_red" class="colorbtn" onclick="setFill('red')">赤</button
-    ><button id="f_blue" class="colorbtn active" onclick="setFill('blue')">青</button
-    ><br />枠:<button
-      id="b_white"
-      class="colorbtn"
-      onclick="setBorder('white')"
-    >
-      白</button
-    ><button id="b_black" class="colorbtn" onclick="setBorder('black')">
-      黒</button
-    ><button id="b_red" class="colorbtn" onclick="setBorder('red')">
-      赤</button
-    ><button id="b_blue" class="colorbtn active" onclick="setBorder('blue')">青</button
-    ><br />
-    マーカーサイズ
-    <input
-      type="range"
-      id="msize"
-      min="5"
-      max="60"
-      value="15"
-    />
-    検出信頼度
-    <input
-      type="range"
-      id="confThreshold"
-      min="10"
-      max="90"
-      value="30"
-    />
-    <span id="confLabel">30%</span>
-    重なり許容度
-    <input
-      type="range"
-      id="nms"
-      min="10"
-      max="90"
-      value="50"
-    />
-    <span id="nmsLabel">0.50</span>
-    番号サイズ<input
-      type="range"
-      id="nsize"
-      min="20"
-      max="80"
-      value="40"
-      oninput="draw()"
-    />
-    <span id="zoom">倍率:100%</span>
-    <div id="photoCount">この写真:0本</div>
-    <div id="count">全写真合計:0本</div>
-    <div class="help">
-      左クリック=追加 / 長押しドラッグ=移動 / 右クリック=削除 /
-      Ctrl+ホイール=ズーム
-    </div>
+        <b>📖 クイックマニュアル</b>
+        <br /><br />
+
+        ■ 写真の読み込み
+        <br />
+        01.「ファイルの選択」で写真を選択します（複数選択可）
+        <br />
+        02.タブをクリックすると写真を切り替えできます
+
+        <br /><br />
+
+        ■ 自動検出
+        <br />
+        03.「🤖 自動検出」で丸太を自動検出します
+        <br />
+        04.「重なり許容度」で検出結果を調整できます（デフォルト設定値だと同じ丸太にマーカーが複数ついたりする場合があるので、その時は許容度を下げて再度自動検出してネ）
+        <br />
+        05.必要に応じて手動で修正してください
+
+        <br /><br />
+
+        ■ マーカー編集
+        <br />
+        06.左クリックでマーカーを追加します
+        <br />
+        07.長押しドラッグで移動できます
+        <br />
+        08.右クリックで削除できます
+        <br />
+        09.「↩ 元に戻す」で直前の操作を取り消せます
+        <br />
+        10.「🚮 マーカーを全削除」で現在の写真のマーカーを削除できます
+
+        <br /><br />
+
+        ■ 除外機能
+        <br />
+        11.「🚫 矩形除外」を押すと除外エリアモードになります
+        <br />
+        12.ドラッグで矩形の除外範囲を作成できます
+        <br />
+        13.除外エリア内はAI検出対象から除外されます
+        <br />
+        14.除外エリアは右クリックで削除できます
+        <br />
+        15.通常の操作に戻る場合は「🚫 矩形除外」をもう一度押してください
+
+        <br /><br />
+        16.「🔺 ポリゴン除外」を押すとポリゴン除外モードになります
+        <br />
+        17.左クリックで頂点を追加します
+        <br />
+        18.ダブルクリックでポリゴンを確定します
+        <br />
+        19.ポリゴン内はAI検出対象から除外されます
+        <br />
+        20.ポリゴンは右クリックで削除できます
+        <br />
+        21.通常の操作に戻る場合は「🔺 ポリゴン除外」をもう一度押してください
+
+        <br /><br />
+
+        ■ 表示操作
+        <br />
+        22.マーカーサイズを変更できます
+        <br />
+        23.番号サイズを変更できます
+        <br />
+        24.Ctrl＋マウスホイールで拡大・縮小できます
+
+        <br /><br />
+        ■ 比較画像機能
+        <br />
+        25.他の写真タブを右クリックすると比較画像を表示できます
+        <br />
+        26.比較画像には、その写真で設定済みの除外矩形・除外ポリゴンが表示されます
+        <br />
+        27.過去に設定した除外範囲を確認しながら現在の写真の除外設定ができます
+        <br />
+        28.比較画像はマウスホイールで拡大・縮小できます
+        <br />
+        29.比較画像はドラッグして上下左右へ移動できます
+        <br />
+        30.比較画像ウィンドウはドラッグして移動できます
+        <br />
+        31.比較画像ウィンドウ右下のハンドルをドラッグするとサイズ変更できます
+        <br />
+        32.比較画像右上の「✕」で閉じることができます
+
+        <br /><br />
+
+        ■ 保存
+        <br />
+        33.「💾プロジェクト保存」で作業内容を保存できます
+        <br />
+        34.「📂プロジェクト読込」で保存済み案件を再開できます
+        <br />
+        35.「CSV保存」で集計結果を出力できます
       </div>
+      <div id="historyPanel" class="help" style="display: none"></div>
+      <br />
+      <div id="tabs"></div>
+      <br />塗り:<button
+        id="f_transparent"
+        class="colorbtn"
+        onclick="setFill('transparent')"
+      >
+        透明</button
+      ><button id="f_white" class="colorbtn" onclick="setFill('white')">
+        白</button
+      ><button id="f_black" class="colorbtn" onclick="setFill('black')">
+        黒</button
+      ><button id="f_red" class="colorbtn" onclick="setFill('red')">赤</button
+      ><button id="f_blue" class="colorbtn active" onclick="setFill('blue')">
+        青</button
+      ><br />枠:<button
+        id="b_white"
+        class="colorbtn"
+        onclick="setBorder('white')"
+      >
+        白</button
+      ><button id="b_black" class="colorbtn" onclick="setBorder('black')">
+        黒</button
+      ><button id="b_red" class="colorbtn" onclick="setBorder('red')">赤</button
+      ><button id="b_blue" class="colorbtn active" onclick="setBorder('blue')">
+        青</button
+      ><br />
+      マーカーサイズ
+      <input type="range" id="msize" min="5" max="60" value="15" />
+      検出信頼度
+      <input type="range" id="confThreshold" min="10" max="90" value="30" />
+      <span id="confLabel">30%</span>
+      重なり許容度
+      <input type="range" id="nms" min="10" max="90" value="50" />
+      <span id="nmsLabel">0.50</span>
+      番号サイズ<input
+        type="range"
+        id="nsize"
+        min="20"
+        max="80"
+        value="40"
+        oninput="draw()"
+      />
+      <span id="zoom">倍率:100%</span>
+      <div id="photoCount">この写真:0本</div>
+      <div id="count">全写真合計:0本</div>
+      <div class="help">
+        左クリック=追加 / 長押しドラッグ=移動 / 右クリック=削除 /
+        Ctrl+ホイール=ズーム
+      </div>
+    </div>
     <div id="compareWindow">
       <div id="compareHeader">
-        <span id="compareTitle">
-          比較画像
-        </span>
-        <button onclick="closeCompare()">
-          ✕
-        </button>
+        <span id="compareTitle"> 比較画像 </span>
+        <button onclick="closeCompare()">✕</button>
       </div>
-      <img id="compareImg">
+      <img id="compareImg" />
       <div id="resizeHandle"></div>
     </div>
-      <canvas id="cv"></canvas>
+    <canvas id="cv"></canvas>
     <div id="mobileToolbar">
       <div id="normalBar">
-        <button onclick="prevPhoto()">
-          ⬅️
-        </button>
+        <button onclick="prevPhoto()">⬅️</button>
         <button onclick="mobileOpenFile()">
-          📂<br>
+          📂<br />
           読込
         </button>
         <button onclick="testInference()">
-          🤖<br>
+          🤖<br />
           検出
         </button>
         <button onclick="startPolygonMode()">
-          🚫<br>
+          🚫<br />
           除外
         </button>
         <button onclick="saveProject()">
-          💾<br>
+          💾<br />
           保存
         </button>
-        <button onclick="nextPhoto()">
-          ➡️
-        </button>
+        <button onclick="nextPhoto()">➡️</button>
       </div>
-      <div
-        id="polygonBar"
-        style="display:none;"
-        >
+      <div id="polygonBar" style="display: none">
         <button onclick="finishPolygon()">
-          ✅<br>
+          ✅<br />
           確定
         </button>
         <button onclick="cancelPolygon()">
-          ❌<br>
+          ❌<br />
           取消
         </button>
         <button onclick="exitPolygonMode()">
-          🔙<br>
+          🔙<br />
           終了
         </button>
       </div>
     </div>
     <script>
-      const cv = document.getElementById('cv'),
-        ctx = cv.getContext('2d');
+      const cv = document.getElementById("cv"),
+        ctx = cv.getContext("2d");
 
-      const statusElm = document.getElementById('status');
-      
-      const compareWindow =
-        document.getElementById(
-          "compareWindow"
-        );
-      
-      const compareHeader =
-        document.getElementById(
-          "compareHeader"
-        );
-      
-      const resizeHandle =
-        document.getElementById(
-          "resizeHandle"
-        );
+      const statusElm = document.getElementById("status");
+
+      const compareWindow = document.getElementById("compareWindow");
+
+      const compareHeader = document.getElementById("compareHeader");
+
+      const resizeHandle = document.getElementById("resizeHandle");
       let photos = [],
         current = 0,
         img = new Image(),
         pts = [],
         scale = 1,
-        fillColor = 'blue',
-        borderColor = 'blue',
+        fillColor = "blue",
+        borderColor = "blue",
         drag = -1,
         selected = -1,
         holdTimer = null,
         moved = false;
-      
+
       let selecting = false;
       let selectStart = null;
       let selectEnd = null;
       let excludeMode = false;
       let excludeRects = [];
-      
+
       let polygonMode = false;
       let currentPolygon = [];
       let excludePolygons = [];
 
       let showNumber = true;
       let history = [];
-      
+
       let compareDrag = false;
       let compareOffsetX = 0;
       let compareOffsetY = 0;
-      
+
       let resizing = false;
       let resizeStartX = 0;
       let resizeStartY = 0;
@@ -655,138 +560,92 @@
       let compareScale = 1;
       let compareX = 0;
       let compareY = 0;
-      const isMobile =
-        window.matchMedia(
-          "(pointer: coarse)"
-        ).matches;
+      const isMobile = window.matchMedia("(pointer: coarse)").matches;
       let mobileMode = "normal";
       let compareImgDrag = false;
       let compareImgStartX = 0;
       let compareImgStartY = 0;
-      
+
       function showMsg(text) {
         statusElm.textContent = text;
 
-        statusElm.style.display = 'block';
+        statusElm.style.display = "block";
       }
       function hideMsg() {
-        statusElm.style.display = 'none';
+        statusElm.style.display = "none";
       }
       function checkOrientation() {
-        const notice =
-          document.getElementById(
-            "rotateNotice"
-          );
-        if (
-          isMobile &&
-          window.innerHeight >
-          window.innerWidth
-        ) {
-          notice.style.display =
-            "flex";
+        const notice = document.getElementById("rotateNotice");
+        if (isMobile && window.innerHeight > window.innerWidth) {
+          notice.style.display = "flex";
         } else {
-          notice.style.display =
-            "none";
+          notice.style.display = "none";
         }
       }
       function mobileSettings() {
-        const panel =
-          document.getElementById(
-            "mobileSettingsPanel"
-          );
+        const panel = document.getElementById("mobileSettingsPanel");
         panel.style.display =
-          panel.style.display === "block"
-          ? "none"
-          : "block";
+          panel.style.display === "block" ? "none" : "block";
       }
       function closeMobileSettings() {
-        document.getElementById(
-          "mobileSettingsPanel"
-        ).style.display = "none";
+        document.getElementById("mobileSettingsPanel").style.display = "none";
       }
       function mobileOpenFile() {
-        document
-          .getElementById("file")
-          .click();
+        document.getElementById("file").click();
       }
-      function setMobileMode(mode){
+      function setMobileMode(mode) {
         mobileMode = mode;
-        document
-          .getElementById("normalBar")
-          .style.display =
-          mode === "normal"
-          ? "flex"
-          : "none";
-        document
-          .getElementById("polygonBar")
-          .style.display =
-          mode === "polygon"
-          ? "flex"
-          : "none";
+        document.getElementById("normalBar").style.display =
+          mode === "normal" ? "flex" : "none";
+        document.getElementById("polygonBar").style.display =
+          mode === "polygon" ? "flex" : "none";
       }
       function setFill(c) {
         fillColor = c;
         document
-          .querySelectorAll('[id^=f_]')
-          .forEach((x) => x.classList.remove('active'));
-        document.getElementById('f_' + c).classList.add('active');
+          .querySelectorAll("[id^=f_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("f_" + c).classList.add("active");
       }
       function setBorder(c) {
         borderColor = c;
         document
-          .querySelectorAll('[id^=b_]')
-          .forEach((x) => x.classList.remove('active'));
-        document.getElementById('b_' + c).classList.add('active');
+          .querySelectorAll("[id^=b_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("b_" + c).classList.add("active");
       }
-      function mobileSetFill(color){
+      function mobileSetFill(color) {
         setFill(color);
         document
-          .querySelectorAll('[id^=mf_]')
-          .forEach(
-            x => x.classList.remove('active')
-          );
-        document
-          .getElementById(
-            'mf_' + color
-          )
-          .classList.add('active');
+          .querySelectorAll("[id^=mf_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("mf_" + color).classList.add("active");
       }
-      function mobileSetBorder(color){
+      function mobileSetBorder(color) {
         setBorder(color);
         document
-          .querySelectorAll('[id^=mb_]')
-          .forEach(
-            x => x.classList.remove('active')
-          );
-        document
-          .getElementById(
-            'mb_' + color
-          )
-          .classList.add('active');
+          .querySelectorAll("[id^=mb_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("mb_" + color).classList.add("active");
       }
       mobileMsize.oninput = () => {
-        msize.value =
-          mobileMsize.value;
+        msize.value = mobileMsize.value;
         msize.oninput();
       };
       mobileNsize.oninput = () => {
-        nsize.value =
-          mobileNsize.value;
+        nsize.value = mobileNsize.value;
         draw();
       };
       mobileNms.oninput = () => {
-        nms.value =
-          mobileNms.value;
+        nms.value = mobileNms.value;
         updateNmsLabel();
       };
       mobileConfThreshold.oninput = () => {
-        confThreshold.value =
-          mobileConfThreshold.value;
+        confThreshold.value = mobileConfThreshold.value;
         updateConfLabel();
       };
-      function toggleNumber(){
-        showNumber =
-          !showNumber;
+      function toggleNumber() {
+        showNumber = !showNumber;
         draw();
       }
       function toggleExcludeMode() {
@@ -794,306 +653,149 @@
         if (excludeMode) {
           polygonMode = false;
         }
-        showMsg(
-          excludeMode
-          ? "🚫 除外エリアモード"
-          : "通常モード"
-        );
+        showMsg(excludeMode ? "🚫 除外エリアモード" : "通常モード");
       }
       function togglePolygonMode() {
         polygonMode = !polygonMode;
         if (polygonMode) {
           excludeMode = false;
         }
-        setMobileMode(
-          polygonMode
-          ? "polygon"
-          : "normal"
-        );
-        if(polygonMode){
+        setMobileMode(polygonMode ? "polygon" : "normal");
+        if (polygonMode) {
           currentPolygon = [];
         }
-        showMsg(
-          polygonMode
-          ? "🔺 ポリゴン除外モード"
-          : "通常モード"
-        );
+        showMsg(polygonMode ? "🔺 ポリゴン除外モード" : "通常モード");
       }
-      function startPolygonMode(){
+      function startPolygonMode() {
         polygonMode = true;
         excludeMode = false;
         currentPolygon = [];
-        setMobileMode(
-          "polygon"
-        );
-        showMsg(
-          "🔺 ポリゴン除外モード"
-        );
+        setMobileMode("polygon");
+        showMsg("🔺 ポリゴン除外モード");
         draw();
       }
-      function finishPolygon(){
-        if(
-          currentPolygon.length < 3
-        ){
-          alert(
-            "頂点を3つ以上追加してください"
-          );
+      function finishPolygon() {
+        if (currentPolygon.length < 3) {
+          alert("頂点を3つ以上追加してください");
           return;
         }
-        photos[current]
-          .excludePolygons
-          .push(
-            [...currentPolygon]
-          );
-        excludePolygons =
-          photos[current]
-          .excludePolygons;
+        photos[current].excludePolygons.push([...currentPolygon]);
+        excludePolygons = photos[current].excludePolygons;
         currentPolygon = [];
         draw();
-        showMsg(
-          "✅ ポリゴン追加"
-        );
+        showMsg("✅ ポリゴン追加");
       }
-      function cancelPolygon(){
+      function cancelPolygon() {
         currentPolygon = [];
         draw();
       }
-      function exitPolygonMode(){
+      function exitPolygonMode() {
         currentPolygon = [];
         polygonMode = false;
-        setMobileMode(
-          "normal"
-        );
-        showMsg(
-          "通常モード"
-        );
+        setMobileMode("normal");
+        showMsg("通常モード");
         draw();
       }
       function toggleHelp() {
-        const panel =
-          document.getElementById(
-            "helpPanel"
-          );
-        if (
-          getComputedStyle(panel).display
-          === "none"
-        ) {
+        const panel = document.getElementById("helpPanel");
+        if (getComputedStyle(panel).display === "none") {
           panel.style.display = "block";
         } else {
           panel.style.display = "none";
         }
       }
-      function showHistory() {
-        const panel =
-          document.getElementById(
-            "historyPanel"
-          );
-        let historyList =
-          JSON.parse(
-            localStorage.getItem(
-              "omc_history"
-            ) || "[]"
-          );
-        if (
-          historyList.length === 0
-        ) {
-          panel.innerHTML =
-            "履歴なし";
-        } else {
-          panel.innerHTML =
-            historyList.map(
-              (h, i) =>
-                `<button
-                onclick="loadHistory(${i})">
-                ${h.createdAt}
-                </button>
-                <br>`
-            ).join("");
-        }
-        panel.style.display =
-          panel.style.display ===
-          "block"
-          ? "none"
-          : "block";
-      }
-      resizeHandle.onmousedown =
-        (e) => {
-          resizing = true;
-          resizeStartX = e.clientX;
-          resizeStartY = e.clientY;
-          startWidth =
-            compareWindow.offsetWidth;
-          startHeight =
-            compareWindow.offsetHeight;
-        };
-      const compareImg =
-        document.getElementById(
-          "compareImg"
-        );
-      compareHeader.onmousedown =
-        (e) => {
-          compareDrag = true;
-          compareOffsetX =
-            e.clientX -
-            compareWindow.offsetLeft;
-          compareOffsetY =
-            e.clientY -
-            compareWindow.offsetTop;
-        };
+      resizeHandle.onmousedown = (e) => {
+        resizing = true;
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        startWidth = compareWindow.offsetWidth;
+        startHeight = compareWindow.offsetHeight;
+      };
+      const compareImg = document.getElementById("compareImg");
+      compareHeader.onmousedown = (e) => {
+        compareDrag = true;
+        compareOffsetX = e.clientX - compareWindow.offsetLeft;
+        compareOffsetY = e.clientY - compareWindow.offsetTop;
+      };
       function openCompare(i) {
-        const win =
-          document.getElementById(
-            "compareWindow"
-          );
-        const imgElm =
-          document.getElementById(
-            "compareImg"
-          );
-        const title =
-          document.getElementById(
-            "compareTitle"
-          );
-        const c =
-          document.createElement("canvas");
-        c.width =
-          photos[i].img.width;
-        c.height =
-          photos[i].img.height;
-        const x =
-          c.getContext("2d");
-        x.drawImage(
-          photos[i].img,
-          0,
-          0
-        );
-        photos[i].excludeRects.forEach(r => {
-          x.fillStyle =
-            "rgba(255,0,0,0.35)";
-          x.fillRect(
-            r.x,
-            r.y,
-            r.w,
-            r.h
-          );
-          x.strokeStyle =
-            "red";
+        const win = document.getElementById("compareWindow");
+        const imgElm = document.getElementById("compareImg");
+        const title = document.getElementById("compareTitle");
+        const c = document.createElement("canvas");
+        c.width = photos[i].img.width;
+        c.height = photos[i].img.height;
+        const x = c.getContext("2d");
+        x.drawImage(photos[i].img, 0, 0);
+        photos[i].excludeRects.forEach((r) => {
+          x.fillStyle = "rgba(255,0,0,0.35)";
+          x.fillRect(r.x, r.y, r.w, r.h);
+          x.strokeStyle = "red";
           x.lineWidth = 3;
-          x.strokeRect(
-            r.x,
-            r.y,
-            r.w,
-            r.h
-          );
+          x.strokeRect(r.x, r.y, r.w, r.h);
         });
-        photos[i].excludePolygons.forEach(poly => {
+        photos[i].excludePolygons.forEach((poly) => {
           x.beginPath();
-          x.moveTo(
-            poly[0].x,
-            poly[0].y
-          );
-          for (
-            let j = 1;
-            j < poly.length;
-            j++
-          ) {
-            x.lineTo(
-              poly[j].x,
-              poly[j].y
-            );
+          x.moveTo(poly[0].x, poly[0].y);
+          for (let j = 1; j < poly.length; j++) {
+            x.lineTo(poly[j].x, poly[j].y);
           }
           x.closePath();
-          x.fillStyle =
-            "rgba(255,0,0,0.35)";
+          x.fillStyle = "rgba(255,0,0,0.35)";
           x.fill();
-          x.strokeStyle =
-            "red";
+          x.strokeStyle = "red";
           x.lineWidth = 3;
           x.stroke();
         });
-        imgElm.src =
-          c.toDataURL();
-        title.textContent =
-          photos[i].name;
+        imgElm.src = c.toDataURL();
+        title.textContent = photos[i].name;
         compareScale = 1;
         compareX = 0;
         compareY = 0;
         updateCompareView();
-        win.style.display =
-          "block";
+        win.style.display = "block";
       }
       function closeCompare() {
-        document.getElementById(
-          "compareWindow"
-        ).style.display = "none";
+        document.getElementById("compareWindow").style.display = "none";
       }
       compareImg.addEventListener(
         "wheel",
         (e) => {
           e.preventDefault();
-          compareScale *=
-            e.deltaY < 0
-            ? 1.1
-            : 0.9;
-          compareScale =
-            Math.max(
-              0.2,
-              Math.min(
-                10,
-                compareScale
-              )
-            );
+          compareScale *= e.deltaY < 0 ? 1.1 : 0.9;
+          compareScale = Math.max(0.2, Math.min(10, compareScale));
           updateCompareView();
         },
         {
-          passive:false
-        }
+          passive: false,
+        },
       );
       function updateCompareView() {
-        compareImg.style.transform =
-          `translate(${compareX}px, ${compareY}px)
+        compareImg.style.transform = `translate(${compareX}px, ${compareY}px)
           scale(${compareScale})`;
       }
-      compareImg.addEventListener(
-        "pointerdown",
-        (e) => {
-          compareImgDrag = true;
-          compareImgStartX =
-            e.clientX;
-          compareImgStartY =
-            e.clientY;
-          compareImg.style.cursor =
-            "grabbing";
-          compareImg.setPointerCapture(
-            e.pointerId
-          );
-        }
-      );
-      compareImg.addEventListener(
-        "pointerup",
-        () => {
-          compareImgDrag = false;
-          compareImg.style.cursor =
-            "grab";
-        }
-      );
-      compareImg.addEventListener(
-        "pointercancel",
-        () => {
-          compareImgDrag = false;
-          compareImg.style.cursor =
-            "grab";
-        }
-      );
+      compareImg.addEventListener("pointerdown", (e) => {
+        compareImgDrag = true;
+        compareImgStartX = e.clientX;
+        compareImgStartY = e.clientY;
+        compareImg.style.cursor = "grabbing";
+        compareImg.setPointerCapture(e.pointerId);
+      });
+      compareImg.addEventListener("pointerup", () => {
+        compareImgDrag = false;
+        compareImg.style.cursor = "grab";
+      });
+      compareImg.addEventListener("pointercancel", () => {
+        compareImgDrag = false;
+        compareImg.style.cursor = "grab";
+      });
       function updateConfLabel() {
-        confLabel.textContent =
-          confThreshold.value + "%";
+        confLabel.textContent = confThreshold.value + "%";
       }
       function updateNmsLabel() {
-        nmsLabel.textContent =
-          (nms.value / 100).toFixed(2);
+        nmsLabel.textContent = (nms.value / 100).toFixed(2);
       }
       msize.oninput = () => {
-        photos[current].pts.forEach(p => {
+        photos[current].pts.forEach((p) => {
           p.size = +msize.value;
         });
         pts = photos[current].pts;
@@ -1107,34 +809,40 @@
             im.onload = r;
             im.src = URL.createObjectURL(f);
           });
-          photos.push({ name: f.name, img: im, pts: [], excludeRects: [], excludePolygons: [] });
+          photos.push({
+            name: f.name,
+            img: im,
+            pts: [],
+            excludeRects: [],
+            excludePolygons: [],
+          });
         }
         renderTabs();
         if (photos.length) switchTab(0);
-      };
+      }
       function renderTabs() {
-        tabs.innerHTML = '';
+        tabs.innerHTML = "";
 
         photos.forEach((p, i) => {
-          let b = document.createElement('button');
+          let b = document.createElement("button");
 
           if (i === current) {
-            b.textContent = '▶ ' + p.name + ' (' + p.pts.length + ')';
+            b.textContent = "▶ " + p.name + " (" + p.pts.length + ")";
 
-            b.style.backgroundColor = '#ff9800';
-            b.style.color = 'white';
-            b.style.fontWeight = 'bold';
-            b.style.border = '3px solid red';
-            b.style.fontSize = '16px';
-            b.style.padding = '6px 12px';
+            b.style.backgroundColor = "#ff9800";
+            b.style.color = "white";
+            b.style.fontWeight = "bold";
+            b.style.border = "3px solid red";
+            b.style.fontSize = "16px";
+            b.style.padding = "6px 12px";
           } else {
-            b.textContent = p.name + ' (' + p.pts.length + ')';
+            b.textContent = p.name + " (" + p.pts.length + ")";
 
-            b.style.backgroundColor = '#f5f5f5';
-            b.style.color = 'black';
-            b.style.fontWeight = 'normal';
-            b.style.border = '1px solid #999';
-            b.style.padding = '4px 8px';
+            b.style.backgroundColor = "#f5f5f5";
+            b.style.color = "black";
+            b.style.fontWeight = "normal";
+            b.style.border = "1px solid #999";
+            b.style.padding = "4px 8px";
           }
 
           b.onclick = () => switchTab(i);
@@ -1153,38 +861,24 @@
         current = i;
         img = photos[i].img;
         pts = photos[i].pts;
-        excludeRects =
-          photos[i].excludeRects;
-        excludePolygons =
-          photos[i].excludePolygons;
+        excludeRects = photos[i].excludeRects;
+        excludePolygons = photos[i].excludePolygons;
         cv.width = img.width;
         cv.height = img.height;
-        if(isMobile){
-          document.getElementById(
-            "photoIndex"
-          ).textContent =
-            "📷 " +
-            (current + 1) +
-            " / " +
-            photos.length;
+        if (isMobile) {
+          document.getElementById("photoIndex").textContent =
+            "📷 " + (current + 1) + " / " + photos.length;
         }
         draw();
       }
-      function prevPhoto(){
-        if(current > 0){
-          switchTab(
-            current - 1
-          );
+      function prevPhoto() {
+        if (current > 0) {
+          switchTab(current - 1);
         }
       }
-      function nextPhoto(){
-        if(
-          current <
-          photos.length - 1
-        ){
-          switchTab(
-            current + 1
-          );
+      function nextPhoto() {
+        if (current < photos.length - 1) {
+          switchTab(current + 1);
         }
       }
       function draw() {
@@ -1195,55 +889,38 @@
         if (img.src) ctx.drawImage(img, 0, 0);
         let ns = +nsize.value;
         pts.forEach((p, i) => {
-          ctx.strokeStyle = i === selected ? 'orange' : p.border;
+          ctx.strokeStyle = i === selected ? "orange" : p.border;
           ctx.lineWidth = i === selected ? 6 : 3;
-          ctx.fillStyle = p.fill === 'transparent' ? 'rgba(0,0,0,0)' : p.fill;
+          ctx.fillStyle = p.fill === "transparent" ? "rgba(0,0,0,0)" : p.fill;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
           ctx.stroke();
-          ctx.font = 'bold ' + ns + 'px Arial';
-          ctx.strokeStyle = 'white';
+          ctx.font = "bold " + ns + "px Arial";
+          ctx.strokeStyle = "white";
           ctx.lineWidth = 5;
-          if(showNumber){
-          ctx.strokeText(i + 1, p.x + 18, p.y);
-          ctx.fillStyle = 'black';
-          ctx.fillText(i + 1, p.x + 18, p.y);
+          if (showNumber) {
+            ctx.strokeText(i + 1, p.x + 18, p.y);
+            ctx.fillStyle = "black";
+            ctx.fillText(i + 1, p.x + 18, p.y);
           }
         });
-        
-        excludeRects.forEach(r => {
+
+        excludeRects.forEach((r) => {
           ctx.fillStyle = "rgba(0,0,0,0.35)";
-          ctx.fillRect(
-            r.x,
-            r.y,
-            r.w,
-            r.h
-          );
+          ctx.fillRect(r.x, r.y, r.w, r.h);
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
-          ctx.strokeRect(
-            r.x,
-            r.y,
-            r.w,
-            r.h
-          );
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
         });
-        excludePolygons.forEach(poly => {
-          ctx.fillStyle =
-            "rgba(0,0,0,0.35)";
+        excludePolygons.forEach((poly) => {
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
           ctx.strokeStyle = "red";
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(
-            poly[0].x,
-            poly[0].y
-          );
+          ctx.moveTo(poly[0].x, poly[0].y);
           for (let i = 1; i < poly.length; i++) {
-            ctx.lineTo(
-              poly[i].x,
-              poly[i].y
-            );
+            ctx.lineTo(poly[i].x, poly[i].y);
           }
           ctx.closePath();
           ctx.fill();
@@ -1253,39 +930,22 @@
           ctx.strokeStyle = "lime";
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(
-            currentPolygon[0].x,
-            currentPolygon[0].y
-          );
-          for(let i=1;i<currentPolygon.length;i++){
-            ctx.lineTo(
-              currentPolygon[i].x,
-              currentPolygon[i].y
-            );
+          ctx.moveTo(currentPolygon[0].x, currentPolygon[0].y);
+          for (let i = 1; i < currentPolygon.length; i++) {
+            ctx.lineTo(currentPolygon[i].x, currentPolygon[i].y);
           }
           ctx.stroke();
-          currentPolygon.forEach(p => {
+          currentPolygon.forEach((p) => {
             ctx.fillStyle = "yellow";
             ctx.strokeStyle = "black";
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(
-              p.x,
-              p.y,
-              10,
-              0,
-              Math.PI * 2
-            );
+            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
           });
         }
-        if (
-          excludeMode &&
-          selecting &&
-          selectStart &&
-          selectEnd
-        ) {
+        if (excludeMode && selecting && selectStart && selectEnd) {
           ctx.strokeStyle = "lime";
           ctx.lineWidth = 5;
           ctx.setLineDash([10, 5]);
@@ -1293,24 +953,18 @@
             selectStart.x,
             selectStart.y,
             selectEnd.x - selectStart.x,
-            selectEnd.y - selectStart.y
+            selectEnd.y - selectStart.y,
           );
           ctx.setLineDash([]);
         }
         ctx.restore();
-        photoCount.textContent = 'この写真:' + pts.length + '本';
+        photoCount.textContent = "この写真:" + pts.length + "本";
 
         count.textContent =
-          '全写真合計:' + photos.reduce((s, p) => s + p.pts.length, 0) + '本';
-        if(isMobile){
-          const total =
-            photos.reduce(
-              (s, p) => s + p.pts.length,
-              0
-            );
-          document.getElementById(
-            "photoIndex"
-          ).textContent =
+          "全写真合計:" + photos.reduce((s, p) => s + p.pts.length, 0) + "本";
+        if (isMobile) {
+          const total = photos.reduce((s, p) => s + p.pts.length, 0);
+          document.getElementById("photoIndex").textContent =
             "📷 " +
             (current + 1) +
             " / " +
@@ -1322,7 +976,7 @@
             "本";
         }
 
-        zoom.textContent = '倍率:' + Math.round(scale * 100) + '%';
+        zoom.textContent = "倍率:" + Math.round(scale * 100) + "%";
 
         renderTabs();
       }
@@ -1347,26 +1001,14 @@
       }
       function pointInPolygon(point, polygon) {
         let inside = false;
-        for (
-          let i = 0, j = polygon.length - 1;
-          i < polygon.length;
-          j = i++
-        ) {
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
           const xi = polygon[i].x;
           const yi = polygon[i].y;
           const xj = polygon[j].x;
           const yj = polygon[j].y;
           const intersect =
-            ((yi > point.y) !== (yj > point.y))
-            &&
-            (
-              point.x <
-              ((xj - xi) *
-               (point.y - yi))
-              /
-              (yj - yi)
-              + xi
-            );
+            yi > point.y !== yj > point.y &&
+            point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
           if (intersect) {
             inside = !inside;
           }
@@ -1374,20 +1016,12 @@
         return inside;
       }
       cv.onmousedown = (e) => {
-        if (
-          polygonMode &&
-          e.button === 0
-        ) {
-          currentPolygon.push(
-            pos(e)
-          );
+        if (polygonMode && e.button === 0) {
+          currentPolygon.push(pos(e));
           draw();
           return;
         }
-        if (
-          excludeMode &&
-          e.button === 0
-        ) {
+        if (excludeMode && e.button === 0) {
           selecting = true;
           selectStart = pos(e);
           selectEnd = pos(e);
@@ -1406,34 +1040,17 @@
         if (polygonMode) {
           return;
         }
-        if (
-          excludeMode &&
-          selecting &&
-          e.button === 0
-        ) {
+        if (excludeMode && selecting && e.button === 0) {
           selecting = false;
           excludeRects.push({
-            x: Math.min(
-              selectStart.x,
-              selectEnd.x
-            ),
-            y: Math.min(
-              selectStart.y,
-              selectEnd.y
-            ),
-            w: Math.abs(
-              selectEnd.x -
-              selectStart.x
-            ),
-            h: Math.abs(
-              selectEnd.y -
-              selectStart.y
-            )
+            x: Math.min(selectStart.x, selectEnd.x),
+            y: Math.min(selectStart.y, selectEnd.y),
+            w: Math.abs(selectEnd.x - selectStart.x),
+            h: Math.abs(selectEnd.y - selectStart.y),
           });
-          
-          photos[current].excludeRects =
-            excludeRects;
-          
+
+          photos[current].excludeRects = excludeRects;
+
           draw();
           return;
         }
@@ -1473,52 +1090,24 @@
       };
       window.onmousemove = (e) => {
         if (compareImgDrag) {
-          compareX +=
-            e.clientX -
-            compareImgStartX;
-          compareY +=
-            e.clientY -
-            compareImgStartY;
-          compareImgStartX =
-            e.clientX;
-          compareImgStartY =
-            e.clientY;
+          compareX += e.clientX - compareImgStartX;
+          compareY += e.clientY - compareImgStartY;
+          compareImgStartX = e.clientX;
+          compareImgStartY = e.clientY;
           updateCompareView();
         }
         if (resizing) {
           compareWindow.style.width =
-            Math.max(
-              200,
-              startWidth +
-              (
-                e.clientX -
-                resizeStartX
-              )
-            ) + "px";
+            Math.max(200, startWidth + (e.clientX - resizeStartX)) + "px";
           compareWindow.style.height =
-            Math.max(
-              150,
-              startHeight +
-              (
-                e.clientY -
-                resizeStartY
-              )
-            ) + "px";
+            Math.max(150, startHeight + (e.clientY - resizeStartY)) + "px";
         }
         if (compareDrag) {
-          compareWindow.style.left =
-            (e.clientX - compareOffsetX)
-            + "px";
-          compareWindow.style.top =
-            (e.clientY - compareOffsetY)
-            + "px";
-          compareWindow.style.right =
-            "auto";
+          compareWindow.style.left = e.clientX - compareOffsetX + "px";
+          compareWindow.style.top = e.clientY - compareOffsetY + "px";
+          compareWindow.style.right = "auto";
         }
-        if (
-          excludeMode &&
-          selecting
-        ) {
+        if (excludeMode && selecting) {
           selectEnd = pos(e);
           draw();
           return;
@@ -1540,8 +1129,7 @@
             const poly = excludePolygons[i];
             if (pointInPolygon(p, poly)) {
               excludePolygons.splice(i, 1);
-              photos[current].excludePolygons =
-                excludePolygons;
+              photos[current].excludePolygons = excludePolygons;
               draw();
               return;
             }
@@ -1558,8 +1146,7 @@
               p.y <= r.y + r.h
             ) {
               excludeRects.splice(i, 1);
-              photos[current].excludeRects =
-                excludeRects;
+              photos[current].excludeRects = excludeRects;
               draw();
               return;
             }
@@ -1574,23 +1161,20 @@
         }
       };
       cv.addEventListener(
-        'wheel',
+        "wheel",
         (e) => {
           if (!e.ctrlKey) return;
           e.preventDefault();
           scale = Math.max(
             0.2,
-            Math.min(5, scale * (e.deltaY < 0 ? 1.1 : 0.9))
+            Math.min(5, scale * (e.deltaY < 0 ? 1.1 : 0.9)),
           );
           draw();
         },
-        { passive: false }
+        { passive: false },
       );
       cv.ondblclick = () => {
-        if (
-          !isMobile &&
-          polygonMode
-        ) {
+        if (!isMobile && polygonMode) {
           finishPolygon();
           return;
         }
@@ -1604,96 +1188,47 @@
           await w.write(blob);
           await w.close();
         } else {
-          const a = document.createElement('a');
+          const a = document.createElement("a");
           a.href = URL.createObjectURL(blob);
           a.download = name;
           a.click();
         }
       }
       async function saveProject() {
-        const savePhotos = photos.map(p => {
-          const canvas =
-            document.createElement("canvas");
-          canvas.width =
-            p.img.width;
-          canvas.height =
-            p.img.height;
-          const x =
-            canvas.getContext("2d");
-          x.drawImage(
-            p.img,
-            0,
-            0
-          );
+        const savePhotos = photos.map((p) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = p.img.width;
+          canvas.height = p.img.height;
+          const x = canvas.getContext("2d");
+          x.drawImage(p.img, 0, 0);
           return {
             name: p.name,
-            imageData:
-              canvas.toDataURL("image/png"),
+            imageData: canvas.toDataURL("image/png"),
             pts: p.pts,
-            excludeRects:
-              p.excludeRects,
-            excludePolygons:
-              p.excludePolygons
+            excludeRects: p.excludeRects,
+            excludePolygons: p.excludePolygons,
           };
         });
         const projectData = {
-          createdAt:
-            new Date().toLocaleString(),
-          confidence:
-            confThreshold.value,
-          nms:
-            nms.value,
-          totalCount:
-            photos.reduce(
-              (s, p) => s + p.pts.length,
-              0
-            ),
-          photos:
-            savePhotos
+          createdAt: new Date().toLocaleString(),
+          confidence: confThreshold.value,
+          nms: nms.value,
+          totalCount: photos.reduce((s, p) => s + p.pts.length, 0),
+          photos: savePhotos,
         };
-        let historyList =
-          JSON.parse(
-            localStorage.getItem(
-              "omc_history"
-            ) || "[]"
-          );
-        historyList.unshift(
-          projectData
-        );
-        if (
-          historyList.length > 30
-        ) {
-          historyList =
-            historyList.slice(0,30);
-        }
-        localStorage.setItem(
-          "omc_history",
-          JSON.stringify(
-            historyList
-          )
-        );
-        const json =
-          JSON.stringify(projectData);
-        const blob = new Blob(
-          [json],
-          {
-            type:
-              "application/json"
-          }
-        );
-        await saveBlob(
-          blob,
-          "project.omc"
-        );
-        showMsg(
-          "✅ プロジェクト保存完了"
-        );
+        await saveProjectToDB(projectData);
+        const json = JSON.stringify(projectData);
+        const blob = new Blob([json], {
+          type: "application/json",
+        });
+        await saveBlob(blob, "project.omc");
+        showMsg("✅ プロジェクト保存完了");
       }
       async function restoreProject(projectData) {
         photos = [];
         for (const p of projectData.photos) {
           const im = new Image();
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             im.onload = resolve;
             im.src = p.imageData;
           });
@@ -1702,14 +1237,12 @@
             img: im,
             pts: p.pts,
             excludeRects: p.excludeRects,
-            excludePolygons: p.excludePolygons
+            excludePolygons: p.excludePolygons,
           });
         }
-        confThreshold.value =
-          projectData.confidence;
+        confThreshold.value = projectData.confidence;
         updateConfLabel();
-        nms.value =
-          projectData.nms;
+        nms.value = projectData.nms;
         updateNmsLabel();
         renderTabs();
         if (photos.length) {
@@ -1717,49 +1250,26 @@
         }
       }
       async function loadProject(e) {
-        const file =
-          e.target.files[0];
+        const file = e.target.files[0];
         if (!file) return;
-        const json =
-          await file.text();
-        const projectData =
-          JSON.parse(json);
-        await restoreProject(
-          projectData
-        );
-        showMsg(
-          "✅ プロジェクト読込完了"
-        );
-      }
-      async function loadHistory(
-        index
-      ) {
-        const historyList =
-          JSON.parse(
-            localStorage.getItem(
-              "omc_history"
-            ) || "[]"
-          );
-        await restoreProject(
-          historyList[index]
-        );
-        showMsg(
-          "✅ 履歴読込完了"
-        );
+        const json = await file.text();
+        const projectData = JSON.parse(json);
+        await restoreProject(projectData);
+        showMsg("✅ プロジェクト読込完了");
       }
       async function exportCSV() {
-        let rows = ['画像名,本数'];
+        let rows = ["画像名,本数"];
         let total = 0;
         photos.forEach((p) => {
-          rows.push(p.name + ',' + p.pts.length);
+          rows.push(p.name + "," + p.pts.length);
           total += p.pts.length;
         });
-        rows.push('合計,' + total);
-        const blob = new Blob(['\ufeff' + rows.join('\r\n')], {
-          type: 'text/csv;charset=utf-8',
+        rows.push("合計," + total);
+        const blob = new Blob(["\ufeff" + rows.join("\r\n")], {
+          type: "text/csv;charset=utf-8",
         });
-        await saveBlob(blob, 'log_count.csv');
-        showMsg('CSV保存が完了しました。');
+        await saveBlob(blob, "log_count.csv");
+        showMsg("CSV保存が完了しました。");
       }
       function undoLast() {
         if (history.length === 0) {
@@ -1773,7 +1283,7 @@
         draw();
       }
       function clearCurrent() {
-        if (!confirm('この写真のマーカーを全削除しますか？')) {
+        if (!confirm("この写真のマーカーを全削除しますか？")) {
           return;
         }
 
@@ -1787,223 +1297,240 @@
       }
       let session = null;
 
+      let db = null;
+      async function openDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("omcDB", 1);
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+
+            if (!db.objectStoreNames.contains("projects")) {
+              db.createObjectStore("projects", {
+                keyPath: "id",
+                autoIncrement: true,
+              });
+            }
+          };
+
+          request.onsuccess = (e) => {
+            db = e.target.result;
+
+            resolve(db);
+          };
+
+          request.onerror = reject;
+        });
+      }
+
+      async function saveProjectToDB(projectData) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(["projects"], "readwrite");
+
+          const store = tx.objectStore("projects");
+
+          store.add(projectData);
+
+          tx.oncomplete = () => resolve();
+
+          tx.onerror = reject;
+        });
+      }
+
+      async function getProjects() {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(["projects"], "readonly");
+
+          const store = tx.objectStore("projects");
+
+          const request = store.getAll();
+
+          request.onsuccess = () => resolve(request.result);
+
+          request.onerror = reject;
+        });
+      }
+
       async function loadModel() {
-        
         updateNmsLabel();
-        
+
         nms.oninput = updateNmsLabel;
 
         updateConfLabel();
-        
+
         confThreshold.oninput = updateConfLabel;
 
         try {
-          session = await ort.InferenceSession.create('./log_counter_v6.onnx');
+          session = await ort.InferenceSession.create("./log_counter_v6.onnx");
 
-          console.log('✅ ONNXロード成功');
+          console.log("✅ ONNXロード成功");
 
           console.log("入力名=", session.inputNames);
           console.log("出力名=", session.outputNames);
-          
         } catch (e) {
-          console.error('❌ ONNXロード失敗', e);
+          console.error("❌ ONNXロード失敗", e);
         }
       }
 
+      openDB();
       loadModel();
       checkOrientation();
-      window.addEventListener(
-        "resize",
-        checkOrientation
-      );
+      window.addEventListener("resize", checkOrientation);
 
       async function testInference() {
-
         console.log("session=", session);
 
         if (!session) {
-          alert(
-            "AIモデル読込中です。ちょっと待ってね！"
-          );
+          alert("AIモデル読込中です。ちょっと待ってね！");
           return;
         }
-        
+
         if (!img.src) {
           alert("先に画像を選択してください");
           return;
         }
-        
+
         pts = [];
         photos[current].pts = [];
-        
+
         showMsg("🤖 AI解析中...");
-        
+
         const canvas = document.createElement("canvas");
-        
+
         canvas.width = 1280;
         canvas.height = 1280;
-        
+
         const ctx = canvas.getContext("2d");
-        
-        ctx.drawImage(
-          img,
-          0,
-          0,
-          1280,
-          1280
-        );
-        
-        const imageData =
-          ctx.getImageData(
-            0,
-            0,
-            1280,
-            1280
-          );
-        
-        const data = new Float32Array(
-          1 * 3 * 1280 * 1280
-        );
-        
+
+        ctx.drawImage(img, 0, 0, 1280, 1280);
+
+        const imageData = ctx.getImageData(0, 0, 1280, 1280);
+
+        const data = new Float32Array(1 * 3 * 1280 * 1280);
+
         let p = 0;
-        
+
         for (let i = 0; i < imageData.data.length; i += 4) {
           data[p] = imageData.data[i] / 255;
           data[p + 1280 * 1280] = imageData.data[i + 1] / 255;
           data[p + 2 * 1280 * 1280] = imageData.data[i + 2] / 255;
-          
+
           p++;
         }
-        
-        const tensor = new ort.Tensor(
-          "float32",
-          data,
-          [1, 3, 1280, 1280]
-        );
-        
+
+        const tensor = new ort.Tensor("float32", data, [1, 3, 1280, 1280]);
+
         console.log("run直前");
-        
+
         const results = await session.run({
-          images: tensor
+          images: tensor,
         });
 
         window.lastResults = results;
-        
+
         console.log(results);
 
         const d = results.output0.data;
         const N = 33600;
-        
+
         let tempPts = [];
-        
+
         for (let i = 0; i < N; i++) {
-          
           const conf = d[i + N * 4];
-          
+
           if (conf >= confThreshold.value / 100) {
             const candidate = {
               x: d[i],
               y: d[i + N],
               w: d[i + N * 2],
               h: d[i + N * 3],
-              conf
+              conf,
             };
             const scaleX = img.width / 1280;
             const scaleY = img.height / 1280;
             const realX = candidate.x * scaleX;
             const realY = candidate.y * scaleY;
-            
+
             // 矩形除外判定
-            const insideRect =
-              excludeRects.some(r =>
+            const insideRect = excludeRects.some(
+              (r) =>
                 realX >= r.x &&
                 realX <= r.x + r.w &&
                 realY >= r.y &&
-                realY <= r.y + r.h
-                               );
-            
+                realY <= r.y + r.h,
+            );
+
             // ポリゴン除外判定
-            const insidePolygon =
-              excludePolygons.some(poly =>
-                pointInPolygon(
-                  {
-                    x: realX,
-                    y: realY
-                  },
-                  poly
-                )
-                                  );
-            
-            if (
-              !insideRect &&
-              !insidePolygon
-            ) {
+            const insidePolygon = excludePolygons.some((poly) =>
+              pointInPolygon(
+                {
+                  x: realX,
+                  y: realY,
+                },
+                poly,
+              ),
+            );
+
+            if (!insideRect && !insidePolygon) {
               tempPts.push(candidate);
             }
           }
         }
         function iou(a, b) {
-          
           const ax1 = a.x - a.w / 2;
           const ay1 = a.y - a.h / 2;
           const ax2 = a.x + a.w / 2;
           const ay2 = a.y + a.h / 2;
-          
+
           const bx1 = b.x - b.w / 2;
           const by1 = b.y - b.h / 2;
           const bx2 = b.x + b.w / 2;
           const by2 = b.y + b.h / 2;
-          
+
           const interX1 = Math.max(ax1, bx1);
           const interY1 = Math.max(ay1, by1);
           const interX2 = Math.min(ax2, bx2);
           const interY2 = Math.min(ay2, by2);
-          
+
           const interW = Math.max(0, interX2 - interX1);
           const interH = Math.max(0, interY2 - interY1);
-          
+
           const interArea = interW * interH;
-          
+
           const areaA = a.w * a.h;
           const areaB = b.w * b.h;
-          
+
           return interArea / (areaA + areaB - interArea);
         }
-        let nmsPts = [...tempPts]
-          .sort((a,b)=>b.conf-a.conf);
-        
+        let nmsPts = [...tempPts].sort((a, b) => b.conf - a.conf);
+
         let finalPts = [];
-        
+
         while (nmsPts.length) {
-          
           const best = nmsPts.shift();
-          
+
           finalPts.push(best);
-          
+
           const overlap = nms.value / 100;
-          
-          nmsPts = nmsPts.filter(
-            p => iou(best,p) < overlap
-          );
+
+          nmsPts = nmsPts.filter((p) => iou(best, p) < overlap);
         }
         const scaleX = img.width / 1280;
         const scaleY = img.height / 1280;
-        
-        pts = finalPts.map(p => ({
+
+        pts = finalPts.map((p) => ({
           x: p.x * scaleX,
           y: p.y * scaleY,
           size: +msize.value,
           fill: fillColor,
-          border: borderColor
+          border: borderColor,
         }));
 
         photos[current].pts = pts;
-        
+
         draw();
-        
+
         showMsg(`✅ ${pts.length}本検出`);
-      } 
-      
+      }
     </script>
   </body>
 </html>
