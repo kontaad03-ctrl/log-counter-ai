@@ -97,6 +97,32 @@
         border-bottom: 2px solid #999;
         transform: rotate(0deg);
       }
+      #historyWindow {
+        display: none;
+        position: fixed;
+        top: 100px;
+        left: 100px;
+        width: 500px;
+        height: 500px;
+        background: white;
+        border: 2px solid #666;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+      }
+
+      #historyHeader {
+        background: #f0f0f0;
+        padding: 5px;
+        display: flex;
+        justify-content: space-between;
+        cursor: move;
+      }
+
+      #historyContent {
+        height: calc(100% - 40px);
+        overflow-y: auto;
+        padding: 10px;
+      }
       /* ===== スマホ用 ===== */
       #rotateNotice {
         display: none;
@@ -414,7 +440,6 @@
         <br />
         35.「CSV保存」で集計結果を出力できます
       </div>
-      <div id="historyPanel" class="help" style="display: none"></div>
       <br />
       <div id="tabs"></div>
       <br />塗り:<button
@@ -473,6 +498,15 @@
       </div>
       <img id="compareImg" />
       <div id="resizeHandle"></div>
+    </div>
+    <div id="historyWindow">
+      <div id="historyHeader">
+        <span>📋 履歴</span>
+
+        <button onclick="closeHistory()">✕</button>
+      </div>
+
+      <div id="historyContent"></div>
     </div>
     <canvas id="cv"></canvas>
     <div id="mobileToolbar">
@@ -769,6 +803,9 @@
           passive: false,
         },
       );
+      function closeHistory() {
+        document.getElementById("historyWindow").style.display = "none";
+      }
       function updateCompareView() {
         compareImg.style.transform = `translate(${compareX}px, ${compareY}px)
           scale(${compareScale})`;
@@ -1370,31 +1407,48 @@
       }
 
       async function showHistory() {
-        const panel = document.getElementById("historyPanel");
+        const win = document.getElementById("historyWindow");
+
+        const content = document.getElementById("historyContent");
 
         const historyList = await getProjectHistory();
 
         if (historyList.length === 0) {
-          panel.innerHTML = "履歴なし";
+          content.innerHTML = "履歴なし";
         } else {
-          panel.innerHTML = historyList
+          content.innerHTML = historyList
             .map(
               (h, i) =>
-                `<button
-          onclick="loadHistory(${i})">
+                `
+        <div style="
+          border:1px solid #ccc;
+          padding:8px;
+          margin-bottom:8px;
+        ">
+
+          <b>
+            ${h.totalCount}本
+          </b>
+
+          <br>
 
           ${h.createdAt}
-          （${h.totalCount}本）
 
-        </button><br>`,
+          <br><br>
+
+          <button
+            onclick="loadHistory(${i})">
+            開く
+          </button>
+
+        </div>
+        `,
             )
             .join("");
         }
 
-        panel.style.display =
-          panel.style.display === "block" ? "none" : "block";
+        win.style.display = "block";
       }
-
       async function loadModel() {
         updateNmsLabel();
 
