@@ -123,6 +123,25 @@
         overflow-y: auto;
         padding: 10px;
       }
+      #historyResizeHandle {
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        cursor: nwse-resize;
+      }
+
+      #historyResizeHandle::before {
+        content: "";
+        position: absolute;
+        right: 4px;
+        bottom: 4px;
+        width: 12px;
+        height: 12px;
+        border-right: 2px solid #999;
+        border-bottom: 2px solid #999;
+      }
       /* ===== スマホ用 ===== */
       #rotateNotice {
         display: none;
@@ -507,6 +526,8 @@
       </div>
 
       <div id="historyContent"></div>
+
+      <div id="historyResizeHandle"></div>
     </div>
     <canvas id="cv"></canvas>
     <div id="mobileToolbar">
@@ -553,6 +574,24 @@
 
       const compareWindow = document.getElementById("compareWindow");
 
+      const historyWindow = document.getElementById("historyWindow");
+      const historyHeader = document.getElementById("historyHeader");
+      const historyResizeHandle = document.getElementById(
+        "historyResizeHandle",
+      );
+
+      historyResizeHandle.onmousedown = (e) => {
+        historyResizing = true;
+
+        historyResizeStartX = e.clientX;
+
+        historyResizeStartY = e.clientY;
+
+        historyStartWidth = historyWindow.offsetWidth;
+
+        historyStartHeight = historyWindow.offsetHeight;
+      };
+
       const compareHeader = document.getElementById("compareHeader");
 
       const resizeHandle = document.getElementById("resizeHandle");
@@ -585,11 +624,21 @@
       let compareOffsetX = 0;
       let compareOffsetY = 0;
 
+      let historyDrag = false;
+      let historyOffsetX = 0;
+      let historyOffsetY = 0;
+
       let resizing = false;
       let resizeStartX = 0;
       let resizeStartY = 0;
       let startWidth = 0;
       let startHeight = 0;
+
+      let historyResizing = false;
+      let historyResizeStartX = 0;
+      let historyResizeStartY = 0;
+      let historyStartWidth = 0;
+      let historyStartHeight = 0;
 
       let compareScale = 1;
       let compareX = 0;
@@ -750,6 +799,13 @@
         compareDrag = true;
         compareOffsetX = e.clientX - compareWindow.offsetLeft;
         compareOffsetY = e.clientY - compareWindow.offsetTop;
+      };
+      historyHeader.onmousedown = (e) => {
+        historyDrag = true;
+
+        historyOffsetX = e.clientX - historyWindow.offsetLeft;
+
+        historyOffsetY = e.clientY - historyWindow.offsetTop;
       };
       function openCompare(i) {
         const win = document.getElementById("compareWindow");
@@ -1144,6 +1200,24 @@
           compareWindow.style.top = e.clientY - compareOffsetY + "px";
           compareWindow.style.right = "auto";
         }
+        if (historyDrag) {
+          historyWindow.style.left = e.clientX - historyOffsetX + "px";
+
+          historyWindow.style.top = e.clientY - historyOffsetY + "px";
+        }
+        if (historyResizing) {
+          historyWindow.style.width =
+            Math.max(
+              300,
+              historyStartWidth + (e.clientX - historyResizeStartX),
+            ) + "px";
+
+          historyWindow.style.height =
+            Math.max(
+              300,
+              historyStartHeight + (e.clientY - historyResizeStartY),
+            ) + "px";
+        }
         if (excludeMode && selecting) {
           selectEnd = pos(e);
           draw();
@@ -1156,7 +1230,12 @@
       };
       window.onmouseup = () => {
         resizing = false;
+
         compareDrag = false;
+
+        historyDrag = false;
+
+        historyResizing = false;
       };
       cv.oncontextmenu = (e) => {
         e.preventDefault();
