@@ -567,1181 +567,1207 @@
       </div>
     </div>
     <script>
-            const cv = document.getElementById("cv"),
-              ctx = cv.getContext("2d");
+      const cv = document.getElementById("cv"),
+        ctx = cv.getContext("2d");
 
-            const statusElm = document.getElementById("status");
+      const statusElm = document.getElementById("status");
 
-            const compareWindow = document.getElementById("compareWindow");
+      const compareWindow = document.getElementById("compareWindow");
 
-            const historyWindow = document.getElementById("historyWindow");
-            const historyHeader = document.getElementById("historyHeader");
-            const historyResizeHandle = document.getElementById(
-              "historyResizeHandle",
-            );
+      const historyWindow = document.getElementById("historyWindow");
+      const historyHeader = document.getElementById("historyHeader");
+      const historyResizeHandle = document.getElementById(
+        "historyResizeHandle",
+      );
 
-            historyResizeHandle.onmousedown = (e) => {
-              historyResizing = true;
+      historyResizeHandle.onmousedown = (e) => {
+        historyResizing = true;
 
-              historyResizeStartX = e.clientX;
+        historyResizeStartX = e.clientX;
 
-              historyResizeStartY = e.clientY;
+        historyResizeStartY = e.clientY;
 
-              historyStartWidth = historyWindow.offsetWidth;
+        historyStartWidth = historyWindow.offsetWidth;
 
-              historyStartHeight = historyWindow.offsetHeight;
-            };
+        historyStartHeight = historyWindow.offsetHeight;
+      };
 
-            const compareHeader = document.getElementById("compareHeader");
+      const compareHeader = document.getElementById("compareHeader");
 
-            const resizeHandle = document.getElementById("resizeHandle");
-            let photos = [],
-              current = 0,
-              img = new Image(),
-              pts = [],
-              scale = 1,
-              fillColor = "blue",
-              borderColor = "blue",
-              drag = -1,
-              selected = -1,
-              holdTimer = null,
-              moved = false;
+      const resizeHandle = document.getElementById("resizeHandle");
+      let photos = [],
+        current = 0,
+        img = new Image(),
+        pts = [],
+        scale = 1,
+        fillColor = "blue",
+        borderColor = "blue",
+        drag = -1,
+        selected = -1,
+        holdTimer = null,
+        moved = false;
 
-            let selecting = false;
-            let selectStart = null;
-            let selectEnd = null;
-            let excludeMode = false;
-            let excludeRects = [];
+      let selecting = false;
+      let selectStart = null;
+      let selectEnd = null;
+      let excludeMode = false;
+      let excludeRects = [];
 
-            let polygonMode = false;
-            let currentPolygon = [];
-            let excludePolygons = [];
+      let polygonMode = false;
+      let currentPolygon = [];
+      let excludePolygons = [];
 
-            let showNumber = true;
-            let history = [];
+      let showNumber = true;
+      let history = [];
 
-            let compareDrag = false;
-            let compareOffsetX = 0;
-            let compareOffsetY = 0;
+      let compareDrag = false;
+      let compareOffsetX = 0;
+      let compareOffsetY = 0;
 
-            let historyDrag = false;
-            let historyOffsetX = 0;
-            let historyOffsetY = 0;
+      let historyDrag = false;
+      let historyOffsetX = 0;
+      let historyOffsetY = 0;
 
-            let resizing = false;
-            let resizeStartX = 0;
-            let resizeStartY = 0;
-            let startWidth = 0;
-            let startHeight = 0;
+      let resizing = false;
+      let resizeStartX = 0;
+      let resizeStartY = 0;
+      let startWidth = 0;
+      let startHeight = 0;
 
-            let historyResizing = false;
-            let historyResizeStartX = 0;
-            let historyResizeStartY = 0;
-            let historyStartWidth = 0;
-            let historyStartHeight = 0;
+      let historyResizing = false;
+      let historyResizeStartX = 0;
+      let historyResizeStartY = 0;
+      let historyStartWidth = 0;
+      let historyStartHeight = 0;
 
-            let compareScale = 1;
-            let compareX = 0;
-            let compareY = 0;
-            const isMobile = window.matchMedia("(pointer: coarse)").matches;
-            let mobileMode = "normal";
-            let compareImgDrag = false;
-            let compareImgStartX = 0;
-            let compareImgStartY = 0;
+      let compareScale = 1;
+      let compareX = 0;
+      let compareY = 0;
+      const isMobile = window.matchMedia("(pointer: coarse)").matches;
+      let mobileMode = "normal";
+      let compareImgDrag = false;
+      let compareImgStartX = 0;
+      let compareImgStartY = 0;
 
-            function showMsg(text) {
-              statusElm.textContent = text;
+      function showMsg(text) {
+        statusElm.textContent = text;
 
-              statusElm.style.display = "block";
-            }
-            function hideMsg() {
-              statusElm.style.display = "none";
-            }
-            function checkOrientation() {
-              const notice = document.getElementById("rotateNotice");
-              if (isMobile && window.innerHeight > window.innerWidth) {
-                notice.style.display = "flex";
-              } else {
-                notice.style.display = "none";
-              }
-            }
-            function mobileSettings() {
-              const panel = document.getElementById("mobileSettingsPanel");
-              panel.style.display =
-                panel.style.display === "block" ? "none" : "block";
-            }
-            function closeMobileSettings() {
-              document.getElementById("mobileSettingsPanel").style.display = "none";
-            }
-            function mobileOpenFile() {
-              document.getElementById("file").click();
-            }
-            function setMobileMode(mode) {
-              mobileMode = mode;
-              document.getElementById("normalBar").style.display =
-                mode === "normal" ? "flex" : "none";
-              document.getElementById("polygonBar").style.display =
-                mode === "polygon" ? "flex" : "none";
-            }
-            function setFill(c) {
-              fillColor = c;
-              document
-                .querySelectorAll("[id^=f_]")
-                .forEach((x) => x.classList.remove("active"));
-              document.getElementById("f_" + c).classList.add("active");
-            }
-            function setBorder(c) {
-              borderColor = c;
-              document
-                .querySelectorAll("[id^=b_]")
-                .forEach((x) => x.classList.remove("active"));
-              document.getElementById("b_" + c).classList.add("active");
-            }
-            function mobileSetFill(color) {
-              setFill(color);
-              document
-                .querySelectorAll("[id^=mf_]")
-                .forEach((x) => x.classList.remove("active"));
-              document.getElementById("mf_" + color).classList.add("active");
-            }
-            function mobileSetBorder(color) {
-              setBorder(color);
-              document
-                .querySelectorAll("[id^=mb_]")
-                .forEach((x) => x.classList.remove("active"));
-              document.getElementById("mb_" + color).classList.add("active");
-            }
-            mobileMsize.oninput = () => {
-              msize.value = mobileMsize.value;
-              msize.oninput();
-            };
-            mobileNsize.oninput = () => {
-              nsize.value = mobileNsize.value;
-              draw();
-            };
-            mobileNms.oninput = () => {
-              nms.value = mobileNms.value;
-              updateNmsLabel();
-            };
-            mobileConfThreshold.oninput = () => {
-              confThreshold.value = mobileConfThreshold.value;
-              updateConfLabel();
-            };
-            function toggleNumber() {
-              showNumber = !showNumber;
-              draw();
-            }
-            function toggleExcludeMode() {
-              excludeMode = !excludeMode;
-              if (excludeMode) {
-                polygonMode = false;
-              }
-              showMsg(excludeMode ? "🚫 除外エリアモード" : "通常モード");
-            }
-            function togglePolygonMode() {
-              polygonMode = !polygonMode;
-              if (polygonMode) {
-                excludeMode = false;
-              }
-              setMobileMode(polygonMode ? "polygon" : "normal");
-              if (polygonMode) {
-                currentPolygon = [];
-              }
-              showMsg(polygonMode ? "🔺 ポリゴン除外モード" : "通常モード");
-            }
-            function startPolygonMode() {
-              polygonMode = true;
-              excludeMode = false;
-              currentPolygon = [];
-              setMobileMode("polygon");
-              showMsg("🔺 ポリゴン除外モード");
-              draw();
-            }
-            function finishPolygon() {
-              if (currentPolygon.length < 3) {
-                alert("頂点を3つ以上追加してください");
-                return;
-              }
-              photos[current].excludePolygons.push([...currentPolygon]);
-              excludePolygons = photos[current].excludePolygons;
-              currentPolygon = [];
-              draw();
-              showMsg("✅ ポリゴン追加");
-            }
-            function cancelPolygon() {
-              currentPolygon = [];
-              draw();
-            }
-            function exitPolygonMode() {
-              currentPolygon = [];
-              polygonMode = false;
-              setMobileMode("normal");
-              showMsg("通常モード");
-              draw();
-            }
-            function toggleHelp() {
-              const panel = document.getElementById("helpPanel");
-              if (getComputedStyle(panel).display === "none") {
-                panel.style.display = "block";
-              } else {
-                panel.style.display = "none";
-              }
-            }
-            resizeHandle.onmousedown = (e) => {
-              resizing = true;
-              resizeStartX = e.clientX;
-              resizeStartY = e.clientY;
-              startWidth = compareWindow.offsetWidth;
-              startHeight = compareWindow.offsetHeight;
-            };
-            const compareImg = document.getElementById("compareImg");
-            compareHeader.onmousedown = (e) => {
-              compareDrag = true;
-              compareOffsetX = e.clientX - compareWindow.offsetLeft;
-              compareOffsetY = e.clientY - compareWindow.offsetTop;
-            };
-            historyHeader.onmousedown = (e) => {
-              historyDrag = true;
-
-              historyOffsetX = e.clientX - historyWindow.offsetLeft;
-
-              historyOffsetY = e.clientY - historyWindow.offsetTop;
-            };
-            function openCompare(i) {
-              const win = document.getElementById("compareWindow");
-              const imgElm = document.getElementById("compareImg");
-              const title = document.getElementById("compareTitle");
-              const c = document.createElement("canvas");
-              c.width = photos[i].img.width;
-              c.height = photos[i].img.height;
-              const x = c.getContext("2d");
-              x.drawImage(photos[i].img, 0, 0);
-              photos[i].excludeRects.forEach((r) => {
-                x.fillStyle = "rgba(255,0,0,0.35)";
-                x.fillRect(r.x, r.y, r.w, r.h);
-                x.strokeStyle = "red";
-                x.lineWidth = 3;
-                x.strokeRect(r.x, r.y, r.w, r.h);
-              });
-              photos[i].excludePolygons.forEach((poly) => {
-                x.beginPath();
-                x.moveTo(poly[0].x, poly[0].y);
-                for (let j = 1; j < poly.length; j++) {
-                  x.lineTo(poly[j].x, poly[j].y);
-                }
-                x.closePath();
-                x.fillStyle = "rgba(255,0,0,0.35)";
-                x.fill();
-                x.strokeStyle = "red";
-                x.lineWidth = 3;
-                x.stroke();
-              });
-              imgElm.src = c.toDataURL();
-              title.textContent = photos[i].name;
-              compareScale = 1;
-              compareX = 0;
-              compareY = 0;
-              updateCompareView();
-              win.style.display = "block";
-            }
-            function closeCompare() {
-              document.getElementById("compareWindow").style.display = "none";
-            }
-            compareImg.addEventListener(
-              "wheel",
-              (e) => {
-                e.preventDefault();
-                compareScale *= e.deltaY < 0 ? 1.1 : 0.9;
-                compareScale = Math.max(0.2, Math.min(10, compareScale));
-                updateCompareView();
-              },
-              {
-                passive: false,
-              },
-            );
-            function closeHistory() {
-              document.getElementById("historyWindow").style.display = "none";
-            }
-            function updateCompareView() {
-              compareImg.style.transform = `translate(${compareX}px, ${compareY}px)
-                scale(${compareScale})`;
-            }
-            compareImg.addEventListener("pointerdown", (e) => {
-              compareImgDrag = true;
-              compareImgStartX = e.clientX;
-              compareImgStartY = e.clientY;
-              compareImg.style.cursor = "grabbing";
-              compareImg.setPointerCapture(e.pointerId);
-            });
-            compareImg.addEventListener("pointerup", () => {
-              compareImgDrag = false;
-              compareImg.style.cursor = "grab";
-            });
-            compareImg.addEventListener("pointercancel", () => {
-              compareImgDrag = false;
-              compareImg.style.cursor = "grab";
-            });
-            function updateConfLabel() {
-              confLabel.textContent = confThreshold.value + "%";
-            }
-            function updateNmsLabel() {
-              nmsLabel.textContent = (nms.value / 100).toFixed(2);
-            }
-            msize.oninput = () => {
-              photos[current].pts.forEach((p) => {
-                p.size = +msize.value;
-              });
-              pts = photos[current].pts;
-              draw();
-            };
-            async function loadPhotos(e) {
-              photos = [];
-              for (const f of [...e.target.files]) {
-                const im = new Image();
-                await new Promise((r) => {
-                  im.onload = r;
-                  im.src = URL.createObjectURL(f);
-                });
-                photos.push({
-                  name: f.name,
-                  img: im,
-                  pts: [],
-                  excludeRects: [],
-                  excludePolygons: [],
-                });
-              }
-              renderTabs();
-              if (photos.length) switchTab(0);
-            }
-            function renderTabs() {
-              tabs.innerHTML = "";
-
-              photos.forEach((p, i) => {
-                let b = document.createElement("button");
-
-                if (i === current) {
-                  b.textContent = "▶ " + p.name + " (" + p.pts.length + ")";
-
-                  b.style.backgroundColor = "#ff9800";
-                  b.style.color = "white";
-                  b.style.fontWeight = "bold";
-                  b.style.border = "3px solid red";
-                  b.style.fontSize = "16px";
-                  b.style.padding = "6px 12px";
-                } else {
-                  b.textContent = p.name + " (" + p.pts.length + ")";
-
-                  b.style.backgroundColor = "#f5f5f5";
-                  b.style.color = "black";
-                  b.style.fontWeight = "normal";
-                  b.style.border = "1px solid #999";
-                  b.style.padding = "4px 8px";
-                }
-
-                b.onclick = () => switchTab(i);
-                b.oncontextmenu = (e) => {
-                  e.preventDefault();
-                  if (i === current) {
-                    return;
-                  }
-                  openCompare(i);
-                };
-
-                tabs.appendChild(b);
-              });
-            }
-            function switchTab(i) {
-              current = i;
-              img = photos[i].img;
-              pts = photos[i].pts;
-              excludeRects = photos[i].excludeRects;
-              excludePolygons = photos[i].excludePolygons;
-              cv.width = img.width;
-              cv.height = img.height;
-              if (isMobile) {
-                document.getElementById("photoIndex").textContent =
-                  "📷 " + (current + 1) + " / " + photos.length;
-              }
-              draw();
-            }
-            function prevPhoto() {
-              if (current > 0) {
-                switchTab(current - 1);
-              }
-            }
-            function nextPhoto() {
-              if (current < photos.length - 1) {
-                switchTab(current + 1);
-              }
-            }
-            function draw() {
-              ctx.setTransform(1, 0, 0, 1, 0, 0);
-              ctx.clearRect(0, 0, cv.width, cv.height);
-              ctx.save();
-              ctx.scale(scale, scale);
-              if (img.src) ctx.drawImage(img, 0, 0);
-              let ns = +nsize.value;
-              pts.forEach((p, i) => {
-                ctx.strokeStyle = i === selected ? "orange" : p.border;
-                ctx.lineWidth = i === selected ? 6 : 3;
-                ctx.fillStyle = p.fill === "transparent" ? "rgba(0,0,0,0)" : p.fill;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                ctx.font = "bold " + ns + "px Arial";
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 5;
-                if (showNumber) {
-                  ctx.strokeText(i + 1, p.x + 18, p.y);
-                  ctx.fillStyle = "black";
-                  ctx.fillText(i + 1, p.x + 18, p.y);
-                }
-              });
-
-              excludeRects.forEach((r) => {
-                ctx.fillStyle = "rgba(0,0,0,0.35)";
-                ctx.fillRect(r.x, r.y, r.w, r.h);
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 2;
-                ctx.strokeRect(r.x, r.y, r.w, r.h);
-              });
-              excludePolygons.forEach((poly) => {
-                ctx.fillStyle = "rgba(0,0,0,0.35)";
-                ctx.strokeStyle = "red";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(poly[0].x, poly[0].y);
-                for (let i = 1; i < poly.length; i++) {
-                  ctx.lineTo(poly[i].x, poly[i].y);
-                }
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-              });
-              if (currentPolygon.length > 0) {
-                ctx.strokeStyle = "lime";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(currentPolygon[0].x, currentPolygon[0].y);
-                for (let i = 1; i < currentPolygon.length; i++) {
-                  ctx.lineTo(currentPolygon[i].x, currentPolygon[i].y);
-                }
-                ctx.stroke();
-                currentPolygon.forEach((p) => {
-                  ctx.fillStyle = "yellow";
-                  ctx.strokeStyle = "black";
-                  ctx.lineWidth = 2;
-                  ctx.beginPath();
-                  ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
-                  ctx.fill();
-                  ctx.stroke();
-                });
-              }
-              if (excludeMode && selecting && selectStart && selectEnd) {
-                ctx.strokeStyle = "lime";
-                ctx.lineWidth = 5;
-                ctx.setLineDash([10, 5]);
-                ctx.strokeRect(
-                  selectStart.x,
-                  selectStart.y,
-                  selectEnd.x - selectStart.x,
-                  selectEnd.y - selectStart.y,
-                );
-                ctx.setLineDash([]);
-              }
-              ctx.restore();
-              photoCount.textContent = "この写真:" + pts.length + "本";
-
-              count.textContent =
-                "全写真合計:" + photos.reduce((s, p) => s + p.pts.length, 0) + "本";
-              if (isMobile) {
-                const total = photos.reduce((s, p) => s + p.pts.length, 0);
-                document.getElementById("photoIndex").textContent =
-                  "📷 " +
-                  (current + 1) +
-                  " / " +
-                  photos.length +
-                  "　この写真：" +
-                  pts.length +
-                  "本　総計：" +
-                  total +
-                  "本";
-              }
-
-              zoom.textContent = "倍率:" + Math.round(scale * 100) + "%";
-
-              renderTabs();
-            }
-            function pos(e) {
-              let r = cv.getBoundingClientRect();
-              return {
-                x: ((e.clientX - r.left) * (cv.width / r.width)) / scale,
-                y: ((e.clientY - r.top) * (cv.height / r.height)) / scale,
-              };
-            }
-            function nearest(p) {
-              let idx = -1,
-                b = 1e9;
-              pts.forEach((q, i) => {
-                let d = (q.x - p.x) ** 2 + (q.y - p.y) ** 2;
-                if (d < b) {
-                  b = d;
-                  idx = i;
-                }
-              });
-              return { idx, dist: b };
-            }
-            function pointInPolygon(point, polygon) {
-              let inside = false;
-              for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-                const xi = polygon[i].x;
-                const yi = polygon[i].y;
-                const xj = polygon[j].x;
-                const yj = polygon[j].y;
-                const intersect =
-                  yi > point.y !== yj > point.y &&
-                  point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
-                if (intersect) {
-                  inside = !inside;
-                }
-              }
-              return inside;
-            }
-            cv.onmousedown = (e) => {
-              if (polygonMode && e.button === 0) {
-                currentPolygon.push(pos(e));
-                draw();
-                return;
-              }
-              if (excludeMode && e.button === 0) {
-                selecting = true;
-                selectStart = pos(e);
-                selectEnd = pos(e);
-                return;
-              }
-              if (!photos.length) return;
-              let n = nearest(pos(e));
-              holdTimer = setTimeout(() => {
-                if (n.idx >= 0 && n.dist < 5000) {
-                  drag = n.idx;
-                  selected = n.idx;
-                }
-              }, 400);
-            };
-            cv.onmouseup = (e) => {
-              if (polygonMode) {
-                return;
-              }
-              if (excludeMode && selecting && e.button === 0) {
-                selecting = false;
-                excludeRects.push({
-                  x: Math.min(selectStart.x, selectEnd.x),
-                  y: Math.min(selectStart.y, selectEnd.y),
-                  w: Math.abs(selectEnd.x - selectStart.x),
-                  h: Math.abs(selectEnd.y - selectStart.y),
-                });
-
-                photos[current].excludeRects = excludeRects;
-
-                draw();
-                return;
-              }
-              clearTimeout(holdTimer);
-
-              // 右クリックは追加しない
-              if (e.button === 2) {
-                return;
-              }
-
-              if (drag >= 0) {
-                drag = -1;
-                draw();
-                return;
-              }
-
-              if (moved) {
-                moved = false;
-                return;
-              }
-
-              history.push(JSON.stringify(pts));
-
-              pts.push({
-                ...pos(e),
-
-                size: +msize.value,
-
-                fill: fillColor,
-
-                border: borderColor,
-              });
-
-              selected = pts.length - 1;
-
-              draw();
-            };
-            window.onmousemove = (e) => {
-              if (compareImgDrag) {
-                compareX += e.clientX - compareImgStartX;
-                compareY += e.clientY - compareImgStartY;
-                compareImgStartX = e.clientX;
-                compareImgStartY = e.clientY;
-                updateCompareView();
-              }
-              if (resizing) {
-                compareWindow.style.width =
-                  Math.max(200, startWidth + (e.clientX - resizeStartX)) + "px";
-                compareWindow.style.height =
-                  Math.max(150, startHeight + (e.clientY - resizeStartY)) + "px";
-              }
-              if (compareDrag) {
-                compareWindow.style.left = e.clientX - compareOffsetX + "px";
-                compareWindow.style.top = e.clientY - compareOffsetY + "px";
-                compareWindow.style.right = "auto";
-              }
-              if (historyDrag) {
-                historyWindow.style.left = e.clientX - historyOffsetX + "px";
-
-                historyWindow.style.top = e.clientY - historyOffsetY + "px";
-              }
-              if (historyResizing) {
-                historyWindow.style.width =
-                  Math.max(
-                    300,
-                    historyStartWidth + (e.clientX - historyResizeStartX),
-                  ) + "px";
-
-                historyWindow.style.height =
-                  Math.max(
-                    300,
-                    historyStartHeight + (e.clientY - historyResizeStartY),
-                  ) + "px";
-              }
-              if (excludeMode && selecting) {
-                selectEnd = pos(e);
-                draw();
-                return;
-              }
-              if (drag >= 0) {
-                Object.assign(pts[drag], pos(e));
-                draw();
-              }
-            };
-            window.onmouseup = () => {
-              resizing = false;
-
-              compareDrag = false;
-
-              historyDrag = false;
-
-              historyResizing = false;
-            };
-            cv.oncontextmenu = (e) => {
-              e.preventDefault();
-              const p = pos(e);
-              if (polygonMode) {
-                for (let i = excludePolygons.length - 1; i >= 0; i--) {
-                  const poly = excludePolygons[i];
-                  if (pointInPolygon(p, poly)) {
-                    excludePolygons.splice(i, 1);
-                    photos[current].excludePolygons = excludePolygons;
-                    draw();
-                    return;
-                  }
-                }
-                return;
-              }
-              if (excludeMode) {
-                for (let i = excludeRects.length - 1; i >= 0; i--) {
-                  const r = excludeRects[i];
-                  if (
-                    p.x >= r.x &&
-                    p.x <= r.x + r.w &&
-                    p.y >= r.y &&
-                    p.y <= r.y + r.h
-                  ) {
-                    excludeRects.splice(i, 1);
-                    photos[current].excludeRects = excludeRects;
-                    draw();
-                    return;
-                  }
-                }
-                return;
-              }
-              let n = nearest(p);
-              if (n.idx >= 0) {
-                history.push(JSON.stringify(pts));
-                pts.splice(n.idx, 1);
-                draw();
-              }
-            };
-            cv.addEventListener(
-              "wheel",
-              (e) => {
-                if (!e.ctrlKey) return;
-                e.preventDefault();
-                scale = Math.max(
-                  0.2,
-                  Math.min(5, scale * (e.deltaY < 0 ? 1.1 : 0.9)),
-                );
-                draw();
-              },
-              { passive: false },
-            );
-            cv.ondblclick = () => {
-              if (!isMobile && polygonMode) {
-                finishPolygon();
-                return;
-              }
-              scale = 1;
-              draw();
-            };
-            async function saveBlob(blob, name) {
-              if (window.showSaveFilePicker) {
-                const h = await showSaveFilePicker({ suggestedName: name });
-                const w = await h.createWritable();
-                await w.write(blob);
-                await w.close();
-              } else {
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = name;
-                a.click();
-              }
-            }
-            async function saveProject() {
-              let thumbnail = "";
-
-      if (photos.length > 0) {
-
-        const thumbCanvas =
-          document.createElement(
-            "canvas"
-          );
-
-        thumbCanvas.width = 200;
-        thumbCanvas.height = 150;
-
-        const thumbCtx =
-          thumbCanvas.getContext("2d");
-
-        thumbCtx.drawImage(
-          photos[0].img,
-          0,
-          0,
-          200,
-          150
-        );
-
-        thumbnail =
-          thumbCanvas.toDataURL(
-            "image/jpeg",
-            0.7
-          );
+        statusElm.style.display = "block";
       }
-              const savePhotos = photos.map((p) => {
-                const canvas = document.createElement("canvas");
-                canvas.width = p.img.width;
-                canvas.height = p.img.height;
-                const x = canvas.getContext("2d");
-                x.drawImage(p.img, 0, 0);
-                return {
-                  name: p.name,
-                  imageData: canvas.toDataURL("image/png"),
-                  pts: p.pts,
-                  excludeRects: p.excludeRects,
-                  excludePolygons: p.excludePolygons,
-                };
-              });
-              const projectData = {
-                thumbnail,
-                createdAt: new Date().toLocaleString("ja-JP", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                confidence: confThreshold.value,
-                nms: nms.value,
-                totalCount: photos.reduce((s, p) => s + p.pts.length, 0),
-                photos: savePhotos,
-              };
-              await saveProjectToDB(projectData);
-              const json = JSON.stringify(projectData);
-              const blob = new Blob([json], {
-                type: "application/json",
-              });
-              await saveBlob(blob, "project.omc");
-              showMsg("✅ プロジェクト保存完了");
-            }
-            async function restoreProject(projectData) {
-              photos = [];
-              for (const p of projectData.photos) {
-                const im = new Image();
-                await new Promise((resolve) => {
-                  im.onload = resolve;
-                  im.src = p.imageData;
-                });
-                photos.push({
-                  name: p.name,
-                  img: im,
-                  pts: p.pts,
-                  excludeRects: p.excludeRects,
-                  excludePolygons: p.excludePolygons,
-                });
-              }
-              confThreshold.value = projectData.confidence;
-              updateConfLabel();
-              nms.value = projectData.nms;
-              updateNmsLabel();
-              renderTabs();
-              if (photos.length) {
-                switchTab(0);
-              }
-            }
-            async function loadProject(e) {
-              const file = e.target.files[0];
-              if (!file) return;
-              const json = await file.text();
-              const projectData = JSON.parse(json);
-              await restoreProject(projectData);
-              showMsg("✅ プロジェクト読込完了");
-            }
-            async function loadHistory(index) {
-              const historyList = await getProjectHistory();
+      function hideMsg() {
+        statusElm.style.display = "none";
+      }
+      function checkOrientation() {
+        const notice = document.getElementById("rotateNotice");
+        if (isMobile && window.innerHeight > window.innerWidth) {
+          notice.style.display = "flex";
+        } else {
+          notice.style.display = "none";
+        }
+      }
+      function mobileSettings() {
+        const panel = document.getElementById("mobileSettingsPanel");
+        panel.style.display =
+          panel.style.display === "block" ? "none" : "block";
+      }
+      function closeMobileSettings() {
+        document.getElementById("mobileSettingsPanel").style.display = "none";
+      }
+      function mobileOpenFile() {
+        document.getElementById("file").click();
+      }
+      function setMobileMode(mode) {
+        mobileMode = mode;
+        document.getElementById("normalBar").style.display =
+          mode === "normal" ? "flex" : "none";
+        document.getElementById("polygonBar").style.display =
+          mode === "polygon" ? "flex" : "none";
+      }
+      function setFill(c) {
+        fillColor = c;
+        document
+          .querySelectorAll("[id^=f_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("f_" + c).classList.add("active");
+      }
+      function setBorder(c) {
+        borderColor = c;
+        document
+          .querySelectorAll("[id^=b_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("b_" + c).classList.add("active");
+      }
+      function mobileSetFill(color) {
+        setFill(color);
+        document
+          .querySelectorAll("[id^=mf_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("mf_" + color).classList.add("active");
+      }
+      function mobileSetBorder(color) {
+        setBorder(color);
+        document
+          .querySelectorAll("[id^=mb_]")
+          .forEach((x) => x.classList.remove("active"));
+        document.getElementById("mb_" + color).classList.add("active");
+      }
+      mobileMsize.oninput = () => {
+        msize.value = mobileMsize.value;
+        msize.oninput();
+      };
+      mobileNsize.oninput = () => {
+        nsize.value = mobileNsize.value;
+        draw();
+      };
+      mobileNms.oninput = () => {
+        nms.value = mobileNms.value;
+        updateNmsLabel();
+      };
+      mobileConfThreshold.oninput = () => {
+        confThreshold.value = mobileConfThreshold.value;
+        updateConfLabel();
+      };
+      function toggleNumber() {
+        showNumber = !showNumber;
+        draw();
+      }
+      function toggleExcludeMode() {
+        excludeMode = !excludeMode;
+        if (excludeMode) {
+          polygonMode = false;
+        }
+        showMsg(excludeMode ? "🚫 除外エリアモード" : "通常モード");
+      }
+      function togglePolygonMode() {
+        polygonMode = !polygonMode;
+        if (polygonMode) {
+          excludeMode = false;
+        }
+        setMobileMode(polygonMode ? "polygon" : "normal");
+        if (polygonMode) {
+          currentPolygon = [];
+        }
+        showMsg(polygonMode ? "🔺 ポリゴン除外モード" : "通常モード");
+      }
+      function startPolygonMode() {
+        polygonMode = true;
+        excludeMode = false;
+        currentPolygon = [];
+        setMobileMode("polygon");
+        showMsg("🔺 ポリゴン除外モード");
+        draw();
+      }
+      function finishPolygon() {
+        if (currentPolygon.length < 3) {
+          alert("頂点を3つ以上追加してください");
+          return;
+        }
+        photos[current].excludePolygons.push([...currentPolygon]);
+        excludePolygons = photos[current].excludePolygons;
+        currentPolygon = [];
+        draw();
+        showMsg("✅ ポリゴン追加");
+      }
+      function cancelPolygon() {
+        currentPolygon = [];
+        draw();
+      }
+      function exitPolygonMode() {
+        currentPolygon = [];
+        polygonMode = false;
+        setMobileMode("normal");
+        showMsg("通常モード");
+        draw();
+      }
+      function toggleHelp() {
+        const panel = document.getElementById("helpPanel");
+        if (getComputedStyle(panel).display === "none") {
+          panel.style.display = "block";
+        } else {
+          panel.style.display = "none";
+        }
+      }
+      resizeHandle.onmousedown = (e) => {
+        resizing = true;
+        resizeStartX = e.clientX;
+        resizeStartY = e.clientY;
+        startWidth = compareWindow.offsetWidth;
+        startHeight = compareWindow.offsetHeight;
+      };
+      const compareImg = document.getElementById("compareImg");
+      compareHeader.onmousedown = (e) => {
+        compareDrag = true;
+        compareOffsetX = e.clientX - compareWindow.offsetLeft;
+        compareOffsetY = e.clientY - compareWindow.offsetTop;
+      };
+      historyHeader.onmousedown = (e) => {
+        historyDrag = true;
 
-              await restoreProject(historyList[index]);
+        historyOffsetX = e.clientX - historyWindow.offsetLeft;
 
-              showMsg("✅ 履歴読込完了");
+        historyOffsetY = e.clientY - historyWindow.offsetTop;
+      };
+      function openCompare(i) {
+        const win = document.getElementById("compareWindow");
+        const imgElm = document.getElementById("compareImg");
+        const title = document.getElementById("compareTitle");
+        const c = document.createElement("canvas");
+        c.width = photos[i].img.width;
+        c.height = photos[i].img.height;
+        const x = c.getContext("2d");
+        x.drawImage(photos[i].img, 0, 0);
+        photos[i].excludeRects.forEach((r) => {
+          x.fillStyle = "rgba(255,0,0,0.35)";
+          x.fillRect(r.x, r.y, r.w, r.h);
+          x.strokeStyle = "red";
+          x.lineWidth = 3;
+          x.strokeRect(r.x, r.y, r.w, r.h);
+        });
+        photos[i].excludePolygons.forEach((poly) => {
+          x.beginPath();
+          x.moveTo(poly[0].x, poly[0].y);
+          for (let j = 1; j < poly.length; j++) {
+            x.lineTo(poly[j].x, poly[j].y);
+          }
+          x.closePath();
+          x.fillStyle = "rgba(255,0,0,0.35)";
+          x.fill();
+          x.strokeStyle = "red";
+          x.lineWidth = 3;
+          x.stroke();
+        });
+        imgElm.src = c.toDataURL();
+        title.textContent = photos[i].name;
+        compareScale = 1;
+        compareX = 0;
+        compareY = 0;
+        updateCompareView();
+        win.style.display = "block";
+      }
+      function closeCompare() {
+        document.getElementById("compareWindow").style.display = "none";
+      }
+      compareImg.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          compareScale *= e.deltaY < 0 ? 1.1 : 0.9;
+          compareScale = Math.max(0.2, Math.min(10, compareScale));
+          updateCompareView();
+        },
+        {
+          passive: false,
+        },
+      );
+      function closeHistory() {
+        document.getElementById("historyWindow").style.display = "none";
+      }
+      function updateCompareView() {
+        compareImg.style.transform = `translate(${compareX}px, ${compareY}px)
+                      scale(${compareScale})`;
+      }
+      compareImg.addEventListener("pointerdown", (e) => {
+        compareImgDrag = true;
+        compareImgStartX = e.clientX;
+        compareImgStartY = e.clientY;
+        compareImg.style.cursor = "grabbing";
+        compareImg.setPointerCapture(e.pointerId);
+      });
+      compareImg.addEventListener("pointerup", () => {
+        compareImgDrag = false;
+        compareImg.style.cursor = "grab";
+      });
+      compareImg.addEventListener("pointercancel", () => {
+        compareImgDrag = false;
+        compareImg.style.cursor = "grab";
+      });
+      function updateConfLabel() {
+        confLabel.textContent = confThreshold.value + "%";
+      }
+      function updateNmsLabel() {
+        nmsLabel.textContent = (nms.value / 100).toFixed(2);
+      }
+      msize.oninput = () => {
+        photos[current].pts.forEach((p) => {
+          p.size = +msize.value;
+        });
+        pts = photos[current].pts;
+        draw();
+      };
+      async function loadPhotos(e) {
+        photos = [];
+        for (const f of [...e.target.files]) {
+          const im = new Image();
+          await new Promise((r) => {
+            im.onload = r;
+            im.src = URL.createObjectURL(f);
+          });
+          photos.push({
+            name: f.name,
+            img: im,
+            pts: [],
+            excludeRects: [],
+            excludePolygons: [],
+          });
+        }
+        renderTabs();
+        if (photos.length) switchTab(0);
+      }
+      function renderTabs() {
+        tabs.innerHTML = "";
+
+        photos.forEach((p, i) => {
+          let b = document.createElement("button");
+
+          if (i === current) {
+            b.textContent = "▶ " + p.name + " (" + p.pts.length + ")";
+
+            b.style.backgroundColor = "#ff9800";
+            b.style.color = "white";
+            b.style.fontWeight = "bold";
+            b.style.border = "3px solid red";
+            b.style.fontSize = "16px";
+            b.style.padding = "6px 12px";
+          } else {
+            b.textContent = p.name + " (" + p.pts.length + ")";
+
+            b.style.backgroundColor = "#f5f5f5";
+            b.style.color = "black";
+            b.style.fontWeight = "normal";
+            b.style.border = "1px solid #999";
+            b.style.padding = "4px 8px";
+          }
+
+          b.onclick = () => switchTab(i);
+          b.oncontextmenu = (e) => {
+            e.preventDefault();
+            if (i === current) {
+              return;
             }
-            async function exportCSV() {
-              let rows = ["画像名,本数"];
-              let total = 0;
-              photos.forEach((p) => {
-                rows.push(p.name + "," + p.pts.length);
-                total += p.pts.length;
-              });
-              rows.push("合計," + total);
-              const blob = new Blob(["\ufeff" + rows.join("\r\n")], {
-                type: "text/csv;charset=utf-8",
-              });
-              await saveBlob(blob, "log_count.csv");
-              showMsg("CSV保存が完了しました。");
-            }
-            function undoLast() {
-              if (history.length === 0) {
-                return;
-              }
+            openCompare(i);
+          };
 
-              pts = JSON.parse(history.pop());
+          tabs.appendChild(b);
+        });
+      }
+      function switchTab(i) {
+        current = i;
+        img = photos[i].img;
+        pts = photos[i].pts;
+        excludeRects = photos[i].excludeRects;
+        excludePolygons = photos[i].excludePolygons;
+        cv.width = img.width;
+        cv.height = img.height;
+        if (isMobile) {
+          document.getElementById("photoIndex").textContent =
+            "📷 " + (current + 1) + " / " + photos.length;
+        }
+        draw();
+      }
+      function prevPhoto() {
+        if (current > 0) {
+          switchTab(current - 1);
+        }
+      }
+      function nextPhoto() {
+        if (current < photos.length - 1) {
+          switchTab(current + 1);
+        }
+      }
+      function draw() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.save();
+        ctx.scale(scale, scale);
+        if (img.src) ctx.drawImage(img, 0, 0);
+        let ns = +nsize.value;
+        pts.forEach((p, i) => {
+          ctx.strokeStyle = i === selected ? "orange" : p.border;
+          ctx.lineWidth = i === selected ? 6 : 3;
+          ctx.fillStyle = p.fill === "transparent" ? "rgba(0,0,0,0)" : p.fill;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.font = "bold " + ns + "px Arial";
+          ctx.strokeStyle = "white";
+          ctx.lineWidth = 5;
+          if (showNumber) {
+            ctx.strokeText(i + 1, p.x + 18, p.y);
+            ctx.fillStyle = "black";
+            ctx.fillText(i + 1, p.x + 18, p.y);
+          }
+        });
 
-              photos[current].pts = pts;
+        excludeRects.forEach((r) => {
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(r.x, r.y, r.w, r.h);
+        });
+        excludePolygons.forEach((poly) => {
+          ctx.fillStyle = "rgba(0,0,0,0.35)";
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(poly[0].x, poly[0].y);
+          for (let i = 1; i < poly.length; i++) {
+            ctx.lineTo(poly[i].x, poly[i].y);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        });
+        if (currentPolygon.length > 0) {
+          ctx.strokeStyle = "lime";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(currentPolygon[0].x, currentPolygon[0].y);
+          for (let i = 1; i < currentPolygon.length; i++) {
+            ctx.lineTo(currentPolygon[i].x, currentPolygon[i].y);
+          }
+          ctx.stroke();
+          currentPolygon.forEach((p) => {
+            ctx.fillStyle = "yellow";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+          });
+        }
+        if (excludeMode && selecting && selectStart && selectEnd) {
+          ctx.strokeStyle = "lime";
+          ctx.lineWidth = 5;
+          ctx.setLineDash([10, 5]);
+          ctx.strokeRect(
+            selectStart.x,
+            selectStart.y,
+            selectEnd.x - selectStart.x,
+            selectEnd.y - selectStart.y,
+          );
+          ctx.setLineDash([]);
+        }
+        ctx.restore();
+        photoCount.textContent = "この写真:" + pts.length + "本";
 
+        count.textContent =
+          "全写真合計:" + photos.reduce((s, p) => s + p.pts.length, 0) + "本";
+        if (isMobile) {
+          const total = photos.reduce((s, p) => s + p.pts.length, 0);
+          document.getElementById("photoIndex").textContent =
+            "📷 " +
+            (current + 1) +
+            " / " +
+            photos.length +
+            "　この写真：" +
+            pts.length +
+            "本　総計：" +
+            total +
+            "本";
+        }
+
+        zoom.textContent = "倍率:" + Math.round(scale * 100) + "%";
+
+        renderTabs();
+      }
+      function pos(e) {
+        let r = cv.getBoundingClientRect();
+        return {
+          x: ((e.clientX - r.left) * (cv.width / r.width)) / scale,
+          y: ((e.clientY - r.top) * (cv.height / r.height)) / scale,
+        };
+      }
+      function nearest(p) {
+        let idx = -1,
+          b = 1e9;
+        pts.forEach((q, i) => {
+          let d = (q.x - p.x) ** 2 + (q.y - p.y) ** 2;
+          if (d < b) {
+            b = d;
+            idx = i;
+          }
+        });
+        return { idx, dist: b };
+      }
+      function pointInPolygon(point, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+          const xi = polygon[i].x;
+          const yi = polygon[i].y;
+          const xj = polygon[j].x;
+          const yj = polygon[j].y;
+          const intersect =
+            yi > point.y !== yj > point.y &&
+            point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+          if (intersect) {
+            inside = !inside;
+          }
+        }
+        return inside;
+      }
+      cv.onmousedown = (e) => {
+        if (polygonMode && e.button === 0) {
+          currentPolygon.push(pos(e));
+          draw();
+          return;
+        }
+        if (excludeMode && e.button === 0) {
+          selecting = true;
+          selectStart = pos(e);
+          selectEnd = pos(e);
+          return;
+        }
+        if (!photos.length) return;
+        let n = nearest(pos(e));
+        holdTimer = setTimeout(() => {
+          if (n.idx >= 0 && n.dist < 5000) {
+            drag = n.idx;
+            selected = n.idx;
+          }
+        }, 400);
+      };
+      cv.onmouseup = (e) => {
+        if (polygonMode) {
+          return;
+        }
+        if (excludeMode && selecting && e.button === 0) {
+          selecting = false;
+          excludeRects.push({
+            x: Math.min(selectStart.x, selectEnd.x),
+            y: Math.min(selectStart.y, selectEnd.y),
+            w: Math.abs(selectEnd.x - selectStart.x),
+            h: Math.abs(selectEnd.y - selectStart.y),
+          });
+
+          photos[current].excludeRects = excludeRects;
+
+          draw();
+          return;
+        }
+        clearTimeout(holdTimer);
+
+        // 右クリックは追加しない
+        if (e.button === 2) {
+          return;
+        }
+
+        if (drag >= 0) {
+          drag = -1;
+          draw();
+          return;
+        }
+
+        if (moved) {
+          moved = false;
+          return;
+        }
+
+        history.push(JSON.stringify(pts));
+
+        pts.push({
+          ...pos(e),
+
+          size: +msize.value,
+
+          fill: fillColor,
+
+          border: borderColor,
+        });
+
+        selected = pts.length - 1;
+
+        draw();
+      };
+      window.onmousemove = (e) => {
+        if (compareImgDrag) {
+          compareX += e.clientX - compareImgStartX;
+          compareY += e.clientY - compareImgStartY;
+          compareImgStartX = e.clientX;
+          compareImgStartY = e.clientY;
+          updateCompareView();
+        }
+        if (resizing) {
+          compareWindow.style.width =
+            Math.max(200, startWidth + (e.clientX - resizeStartX)) + "px";
+          compareWindow.style.height =
+            Math.max(150, startHeight + (e.clientY - resizeStartY)) + "px";
+        }
+        if (compareDrag) {
+          compareWindow.style.left = e.clientX - compareOffsetX + "px";
+          compareWindow.style.top = e.clientY - compareOffsetY + "px";
+          compareWindow.style.right = "auto";
+        }
+        if (historyDrag) {
+          historyWindow.style.left = e.clientX - historyOffsetX + "px";
+
+          historyWindow.style.top = e.clientY - historyOffsetY + "px";
+        }
+        if (historyResizing) {
+          historyWindow.style.width =
+            Math.max(
+              300,
+              historyStartWidth + (e.clientX - historyResizeStartX),
+            ) + "px";
+
+          historyWindow.style.height =
+            Math.max(
+              300,
+              historyStartHeight + (e.clientY - historyResizeStartY),
+            ) + "px";
+        }
+        if (excludeMode && selecting) {
+          selectEnd = pos(e);
+          draw();
+          return;
+        }
+        if (drag >= 0) {
+          Object.assign(pts[drag], pos(e));
+          draw();
+        }
+      };
+      window.onmouseup = () => {
+        resizing = false;
+
+        compareDrag = false;
+
+        historyDrag = false;
+
+        historyResizing = false;
+      };
+      cv.oncontextmenu = (e) => {
+        e.preventDefault();
+        const p = pos(e);
+        if (polygonMode) {
+          for (let i = excludePolygons.length - 1; i >= 0; i--) {
+            const poly = excludePolygons[i];
+            if (pointInPolygon(p, poly)) {
+              excludePolygons.splice(i, 1);
+              photos[current].excludePolygons = excludePolygons;
               draw();
+              return;
             }
-            function clearCurrent() {
-              if (!confirm("この写真のマーカーを全削除しますか？")) {
-                return;
-              }
-
-              history.push(JSON.stringify(pts));
-
-              pts = [];
-
-              photos[current].pts = pts;
-
+          }
+          return;
+        }
+        if (excludeMode) {
+          for (let i = excludeRects.length - 1; i >= 0; i--) {
+            const r = excludeRects[i];
+            if (
+              p.x >= r.x &&
+              p.x <= r.x + r.w &&
+              p.y >= r.y &&
+              p.y <= r.y + r.h
+            ) {
+              excludeRects.splice(i, 1);
+              photos[current].excludeRects = excludeRects;
               draw();
+              return;
             }
-            let session = null;
+          }
+          return;
+        }
+        let n = nearest(p);
+        if (n.idx >= 0) {
+          history.push(JSON.stringify(pts));
+          pts.splice(n.idx, 1);
+          draw();
+        }
+      };
+      cv.addEventListener(
+        "wheel",
+        (e) => {
+          if (!e.ctrlKey) return;
+          e.preventDefault();
+          scale = Math.max(
+            0.2,
+            Math.min(5, scale * (e.deltaY < 0 ? 1.1 : 0.9)),
+          );
+          draw();
+        },
+        { passive: false },
+      );
+      cv.ondblclick = () => {
+        if (!isMobile && polygonMode) {
+          finishPolygon();
+          return;
+        }
+        scale = 1;
+        draw();
+      };
+      async function saveBlob(blob, name) {
+        if (window.showSaveFilePicker) {
+          const h = await showSaveFilePicker({ suggestedName: name });
+          const w = await h.createWritable();
+          await w.write(blob);
+          await w.close();
+        } else {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = name;
+          a.click();
+        }
+      }
+      async function saveProject() {
+        let thumbnail = "";
 
-            let db = null;
-            async function openDB() {
-              return new Promise((resolve, reject) => {
-                const request = indexedDB.open("omcDB", 1);
-                request.onupgradeneeded = (e) => {
-                  const db = e.target.result;
+        if (photos.length > 0) {
+          const thumbCanvas = document.createElement("canvas");
 
-                  if (!db.objectStoreNames.contains("projects")) {
-                    db.createObjectStore("projects", {
-                      keyPath: "id",
-                      autoIncrement: true,
-                    });
-                  }
-                };
+          thumbCanvas.width = 200;
+          thumbCanvas.height = 150;
 
-                request.onsuccess = (e) => {
-                  db = e.target.result;
+          const thumbCtx = thumbCanvas.getContext("2d");
 
-                  resolve(db);
-                };
+          thumbCtx.drawImage(photos[0].img, 0, 0, 200, 150);
 
-                request.onerror = reject;
+          thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.7);
+        }
+        const savePhotos = photos.map((p) => {
+          const canvas = document.createElement("canvas");
+          canvas.width = p.img.width;
+          canvas.height = p.img.height;
+          const x = canvas.getContext("2d");
+          x.drawImage(p.img, 0, 0);
+          return {
+            name: p.name,
+            imageData: canvas.toDataURL("image/png"),
+            pts: p.pts,
+            excludeRects: p.excludeRects,
+            excludePolygons: p.excludePolygons,
+          };
+        });
+        const projectData = {
+          thumbnail,
+          createdAt: new Date().toLocaleString("ja-JP", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          confidence: confThreshold.value,
+          nms: nms.value,
+          totalCount: photos.reduce((s, p) => s + p.pts.length, 0),
+          photos: savePhotos,
+        };
+        await saveProjectToDB(projectData);
+        const json = JSON.stringify(projectData);
+        const blob = new Blob([json], {
+          type: "application/json",
+        });
+        await saveBlob(blob, "project.omc");
+        showMsg("✅ プロジェクト保存完了");
+      }
+      async function restoreProject(projectData) {
+        photos = [];
+        for (const p of projectData.photos) {
+          const im = new Image();
+          await new Promise((resolve) => {
+            im.onload = resolve;
+            im.src = p.imageData;
+          });
+          photos.push({
+            name: p.name,
+            img: im,
+            pts: p.pts,
+            excludeRects: p.excludeRects,
+            excludePolygons: p.excludePolygons,
+          });
+        }
+        confThreshold.value = projectData.confidence;
+        updateConfLabel();
+        nms.value = projectData.nms;
+        updateNmsLabel();
+        renderTabs();
+        if (photos.length) {
+          switchTab(0);
+        }
+      }
+      async function loadProject(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const json = await file.text();
+        const projectData = JSON.parse(json);
+        await restoreProject(projectData);
+        showMsg("✅ プロジェクト読込完了");
+      }
+      async function loadHistory(index) {
+        const historyList = await getProjectHistory();
+
+        await restoreProject(historyList[index]);
+
+        showMsg("✅ 履歴読込完了");
+      }
+      async function exportCSV() {
+        let rows = ["画像名,本数"];
+        let total = 0;
+        photos.forEach((p) => {
+          rows.push(p.name + "," + p.pts.length);
+          total += p.pts.length;
+        });
+        rows.push("合計," + total);
+        const blob = new Blob(["\ufeff" + rows.join("\r\n")], {
+          type: "text/csv;charset=utf-8",
+        });
+        await saveBlob(blob, "log_count.csv");
+        showMsg("CSV保存が完了しました。");
+      }
+      function undoLast() {
+        if (history.length === 0) {
+          return;
+        }
+
+        pts = JSON.parse(history.pop());
+
+        photos[current].pts = pts;
+
+        draw();
+      }
+      function clearCurrent() {
+        if (!confirm("この写真のマーカーを全削除しますか？")) {
+          return;
+        }
+
+        history.push(JSON.stringify(pts));
+
+        pts = [];
+
+        photos[current].pts = pts;
+
+        draw();
+      }
+      let session = null;
+
+      let db = null;
+      async function openDB() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open("omcDB", 1);
+          request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+
+            if (!db.objectStoreNames.contains("projects")) {
+              db.createObjectStore("projects", {
+                keyPath: "id",
+                autoIncrement: true,
               });
             }
+          };
 
-            async function saveProjectToDB(projectData) {
-              return new Promise((resolve, reject) => {
-                const tx = db.transaction(["projects"], "readwrite");
+          request.onsuccess = (e) => {
+            db = e.target.result;
 
-                const store = tx.objectStore("projects");
+            resolve(db);
+          };
 
-                store.add(projectData);
+          request.onerror = reject;
+        });
+      }
 
-                tx.oncomplete = () => resolve();
+      async function saveProjectToDB(projectData) {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(["projects"], "readwrite");
 
-                tx.onerror = reject;
-              });
+          const store = tx.objectStore("projects");
+
+          store.add(projectData);
+
+          tx.oncomplete = () => resolve();
+
+          tx.onerror = reject;
+        });
+      }
+
+      async function getProjects() {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(["projects"], "readonly");
+
+          const store = tx.objectStore("projects");
+
+          const request = store.getAll();
+
+          request.onsuccess = () => resolve(request.result);
+
+          request.onerror = reject;
+        });
+      }
+
+      async function getProjectHistory() {
+        const projects = await getProjects();
+
+        return projects.reverse();
+      }
+
+      async function showHistory() {
+        const win = document.getElementById("historyWindow");
+
+        const content = document.getElementById("historyContent");
+
+        const historyList = await getProjectHistory();
+
+        content.innerHTML = "";
+
+        if (historyList.length === 0) {
+          content.textContent = "履歴なし";
+          win.style.display = "block";
+          return;
+        }
+
+        historyList.forEach((project, index) => {
+          const card = document.createElement("div");
+
+          card.style.border = "1px solid #ccc";
+
+          card.style.padding = "10px";
+
+          card.style.marginBottom = "10px";
+
+          card.style.display = "flex";
+
+          card.style.gap = "10px";
+
+          card.style.alignItems = "center";
+
+          if (project.thumbnail) {
+            const thumbnail = document.createElement("img");
+
+            thumbnail.src = project.thumbnail;
+
+            thumbnail.alt = "履歴のサムネイル";
+
+            thumbnail.style.width = "120px";
+
+            thumbnail.style.height = "90px";
+
+            thumbnail.style.objectFit = "cover";
+
+            thumbnail.style.border = "1px solid #999";
+
+            thumbnail.style.flexShrink = "0";
+
+            card.appendChild(thumbnail);
+          }
+
+          const details = document.createElement("div");
+
+          const countText = document.createElement("div");
+
+          countText.textContent = `検出本数：${project.totalCount}本`;
+
+          countText.style.fontWeight = "bold";
+
+          countText.style.marginBottom = "8px";
+
+          const dateText = document.createElement("div");
+
+          dateText.textContent = project.createdAt || "日時不明";
+
+          dateText.style.marginBottom = "10px";
+
+          const openButton = document.createElement("button");
+
+          openButton.type = "button";
+
+          openButton.textContent = "開く";
+
+          openButton.onclick = async () => {
+            await loadHistory(index);
+            closeHistory();
+          };
+
+          details.appendChild(countText);
+          details.appendChild(dateText);
+          details.appendChild(openButton);
+
+          card.appendChild(details);
+          content.appendChild(card);
+        });
+
+        win.style.display = "block";
+      }
+      async function loadModel() {
+        updateNmsLabel();
+
+        nms.oninput = updateNmsLabel;
+
+        updateConfLabel();
+
+        confThreshold.oninput = updateConfLabel;
+
+        try {
+          session = await ort.InferenceSession.create("./log_counter_v6.onnx");
+
+          console.log("✅ ONNXロード成功");
+
+          console.log("入力名=", session.inputNames);
+          console.log("出力名=", session.outputNames);
+        } catch (e) {
+          console.error("❌ ONNXロード失敗", e);
+        }
+      }
+
+      openDB();
+      loadModel();
+      checkOrientation();
+      window.addEventListener("resize", checkOrientation);
+
+      async function testInference() {
+        console.log("session=", session);
+
+        if (!session) {
+          alert("AIモデル読込中です。ちょっと待ってね！");
+          return;
+        }
+
+        if (!img.src) {
+          alert("先に画像を選択してください");
+          return;
+        }
+
+        pts = [];
+        photos[current].pts = [];
+
+        showMsg("🤖 AI解析中...");
+
+        const canvas = document.createElement("canvas");
+
+        canvas.width = 1280;
+        canvas.height = 1280;
+
+        const ctx = canvas.getContext("2d");
+
+        ctx.drawImage(img, 0, 0, 1280, 1280);
+
+        const imageData = ctx.getImageData(0, 0, 1280, 1280);
+
+        const data = new Float32Array(1 * 3 * 1280 * 1280);
+
+        let p = 0;
+
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          data[p] = imageData.data[i] / 255;
+          data[p + 1280 * 1280] = imageData.data[i + 1] / 255;
+          data[p + 2 * 1280 * 1280] = imageData.data[i + 2] / 255;
+
+          p++;
+        }
+
+        const tensor = new ort.Tensor("float32", data, [1, 3, 1280, 1280]);
+
+        console.log("run直前");
+
+        const results = await session.run({
+          images: tensor,
+        });
+
+        window.lastResults = results;
+
+        console.log(results);
+
+        const d = results.output0.data;
+        const N = 33600;
+
+        let tempPts = [];
+
+        for (let i = 0; i < N; i++) {
+          const conf = d[i + N * 4];
+
+          if (conf >= confThreshold.value / 100) {
+            const candidate = {
+              x: d[i],
+              y: d[i + N],
+              w: d[i + N * 2],
+              h: d[i + N * 3],
+              conf,
+            };
+            const scaleX = img.width / 1280;
+            const scaleY = img.height / 1280;
+            const realX = candidate.x * scaleX;
+            const realY = candidate.y * scaleY;
+
+            // 矩形除外判定
+            const insideRect = excludeRects.some(
+              (r) =>
+                realX >= r.x &&
+                realX <= r.x + r.w &&
+                realY >= r.y &&
+                realY <= r.y + r.h,
+            );
+
+            // ポリゴン除外判定
+            const insidePolygon = excludePolygons.some((poly) =>
+              pointInPolygon(
+                {
+                  x: realX,
+                  y: realY,
+                },
+                poly,
+              ),
+            );
+
+            if (!insideRect && !insidePolygon) {
+              tempPts.push(candidate);
             }
+          }
+        }
+        function iou(a, b) {
+          const ax1 = a.x - a.w / 2;
+          const ay1 = a.y - a.h / 2;
+          const ax2 = a.x + a.w / 2;
+          const ay2 = a.y + a.h / 2;
 
-            async function getProjects() {
-              return new Promise((resolve, reject) => {
-                const tx = db.transaction(["projects"], "readonly");
+          const bx1 = b.x - b.w / 2;
+          const by1 = b.y - b.h / 2;
+          const bx2 = b.x + b.w / 2;
+          const by2 = b.y + b.h / 2;
 
-                const store = tx.objectStore("projects");
+          const interX1 = Math.max(ax1, bx1);
+          const interY1 = Math.max(ay1, by1);
+          const interX2 = Math.min(ax2, bx2);
+          const interY2 = Math.min(ay2, by2);
 
-                const request = store.getAll();
+          const interW = Math.max(0, interX2 - interX1);
+          const interH = Math.max(0, interY2 - interY1);
 
-                request.onsuccess = () => resolve(request.result);
+          const interArea = interW * interH;
 
-                request.onerror = reject;
-              });
-            }
+          const areaA = a.w * a.h;
+          const areaB = b.w * b.h;
 
-            async function getProjectHistory() {
-              const projects = await getProjects();
+          return interArea / (areaA + areaB - interArea);
+        }
+        let nmsPts = [...tempPts].sort((a, b) => b.conf - a.conf);
 
-              return projects.reverse();
-            }
+        let finalPts = [];
 
-            async function showHistory() {
-              const win = document.getElementById("historyWindow");
+        while (nmsPts.length) {
+          const best = nmsPts.shift();
 
-              const content = document.getElementById("historyContent");
+          finalPts.push(best);
 
-              const historyList = await getProjectHistory();
+          const overlap = nms.value / 100;
 
-              if (historyList.length === 0) {
-                content.innerHTML = "履歴なし";
-              } else {
-                content.innerHTML = historyList
-                  .map(
-        (h, i) =>
-          `
-      <div style="
-        border:1px solid #ccc;
-        padding:10px;
-        margin-bottom:10px;
-        display:flex;
-        gap:10px;
-      ">
+          nmsPts = nmsPts.filter((p) => iou(best, p) < overlap);
+        }
+        const scaleX = img.width / 1280;
+        const scaleY = img.height / 1280;
 
-        ${
-          h.thumbnail
-            ? `<img
-                src="${h.thumbnail}"
-                style="
-                  width:120px;
-                  height:90px;
-                  object-fit:cover;
-                  border:1px solid #999;
-                "
-      ${i})">
-            開く
-          </button>
+        pts = finalPts.map((p) => ({
+          x: p.x * scaleX,
+          y: p.y * scaleY,
+          size: +msize.value,
+          fill: fillColor,
+          border: borderColor,
+        }));
 
-        </div>
+        photos[current].pts = pts;
 
-      </div>
-      `
-      )
-                  .join("");
-              }
+        draw();
 
-              win.style.display = "block";
-            }
-            async function loadModel() {
-              updateNmsLabel();
-
-              nms.oninput = updateNmsLabel;
-
-              updateConfLabel();
-
-              confThreshold.oninput = updateConfLabel;
-
-              try {
-                session = await ort.InferenceSession.create("./log_counter_v6.onnx");
-
-                console.log("✅ ONNXロード成功");
-
-                console.log("入力名=", session.inputNames);
-                console.log("出力名=", session.outputNames);
-              } catch (e) {
-                console.error("❌ ONNXロード失敗", e);
-              }
-            }
-
-            openDB();
-            loadModel();
-            checkOrientation();
-            window.addEventListener("resize", checkOrientation);
-
-            async function testInference() {
-              console.log("session=", session);
-
-              if (!session) {
-                alert("AIモデル読込中です。ちょっと待ってね！");
-                return;
-              }
-
-              if (!img.src) {
-                alert("先に画像を選択してください");
-                return;
-              }
-
-              pts = [];
-              photos[current].pts = [];
-
-              showMsg("🤖 AI解析中...");
-
-              const canvas = document.createElement("canvas");
-
-              canvas.width = 1280;
-              canvas.height = 1280;
-
-              const ctx = canvas.getContext("2d");
-
-              ctx.drawImage(img, 0, 0, 1280, 1280);
-
-              const imageData = ctx.getImageData(0, 0, 1280, 1280);
-
-              const data = new Float32Array(1 * 3 * 1280 * 1280);
-
-              let p = 0;
-
-              for (let i = 0; i < imageData.data.length; i += 4) {
-                data[p] = imageData.data[i] / 255;
-                data[p + 1280 * 1280] = imageData.data[i + 1] / 255;
-                data[p + 2 * 1280 * 1280] = imageData.data[i + 2] / 255;
-
-                p++;
-              }
-
-              const tensor = new ort.Tensor("float32", data, [1, 3, 1280, 1280]);
-
-              console.log("run直前");
-
-              const results = await session.run({
-                images: tensor,
-              });
-
-              window.lastResults = results;
-
-              console.log(results);
-
-              const d = results.output0.data;
-              const N = 33600;
-
-              let tempPts = [];
-
-              for (let i = 0; i < N; i++) {
-                const conf = d[i + N * 4];
-
-                if (conf >= confThreshold.value / 100) {
-                  const candidate = {
-                    x: d[i],
-                    y: d[i + N],
-                    w: d[i + N * 2],
-                    h: d[i + N * 3],
-                    conf,
-                  };
-                  const scaleX = img.width / 1280;
-                  const scaleY = img.height / 1280;
-                  const realX = candidate.x * scaleX;
-                  const realY = candidate.y * scaleY;
-
-                  // 矩形除外判定
-                  const insideRect = excludeRects.some(
-                    (r) =>
-                      realX >= r.x &&
-                      realX <= r.x + r.w &&
-                      realY >= r.y &&
-                      realY <= r.y + r.h,
-                  );
-
-                  // ポリゴン除外判定
-                  const insidePolygon = excludePolygons.some((poly) =>
-                    pointInPolygon(
-                      {
-                        x: realX,
-                        y: realY,
-                      },
-                      poly,
-                    ),
-                  );
-
-                  if (!insideRect && !insidePolygon) {
-                    tempPts.push(candidate);
-                  }
-                }
-              }
-              function iou(a, b) {
-                const ax1 = a.x - a.w / 2;
-                const ay1 = a.y - a.h / 2;
-                const ax2 = a.x + a.w / 2;
-                const ay2 = a.y + a.h / 2;
-
-                const bx1 = b.x - b.w / 2;
-                const by1 = b.y - b.h / 2;
-                const bx2 = b.x + b.w / 2;
-                const by2 = b.y + b.h / 2;
-
-                const interX1 = Math.max(ax1, bx1);
-                const interY1 = Math.max(ay1, by1);
-                const interX2 = Math.min(ax2, bx2);
-                const interY2 = Math.min(ay2, by2);
-
-                const interW = Math.max(0, interX2 - interX1);
-                const interH = Math.max(0, interY2 - interY1);
-
-                const interArea = interW * interH;
-
-                const areaA = a.w * a.h;
-                const areaB = b.w * b.h;
-
-                return interArea / (areaA + areaB - interArea);
-              }
-              let nmsPts = [...tempPts].sort((a, b) => b.conf - a.conf);
-
-              let finalPts = [];
-
-              while (nmsPts.length) {
-                const best = nmsPts.shift();
-
-                finalPts.push(best);
-
-                const overlap = nms.value / 100;
-
-                nmsPts = nmsPts.filter((p) => iou(best, p) < overlap);
-              }
-              const scaleX = img.width / 1280;
-              const scaleY = img.height / 1280;
-
-              pts = finalPts.map((p) => ({
-                x: p.x * scaleX,
-                y: p.y * scaleY,
-                size: +msize.value,
-                fill: fillColor,
-                border: borderColor,
-              }));
-
-              photos[current].pts = pts;
-
-              draw();
-
-              showMsg(`✅ ${pts.length}本検出`);
-            }
+        showMsg(`✅ ${pts.length}本検出`);
+      }
     </script>
   </body>
 </html>
