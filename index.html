@@ -688,6 +688,8 @@
       let showNumber = true;
       let history = [];
 
+      const MAX_PROJECTS = 30;
+
       let compareDrag = false;
       let compareOffsetX = 0;
       let compareOffsetY = 0;
@@ -1538,6 +1540,12 @@
 
           await saveProjectToDB(projectData);
 
+          try {
+            await enforceProjectLimit();
+          } catch (limitError) {
+            console.warn("履歴件数の整理に失敗しました", limitError);
+          }
+
           showMsg("✅ プロジェクト保存完了");
         } catch (error) {
           console.error("❌ プロジェクト保存失敗", error);
@@ -1678,6 +1686,139 @@
         });
       }
 
+      async function enforceProjectLimit() {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(["projects"], "readwrite");
+
+          const store = transaction.objectStore("projects");
+
+          const keysRequest = store.getAllKeys();
+
+          keysRequest.onsuccess = () => {
+            const projectKeys = keysRequest.result;
+
+            const excessCount = projectKeys.length - MAX_PROJECTS;
+
+            if (excessCount <= 0) {
+              return;
+            }
+
+            const keysToDelete = projectKeys.slice(0, excessCount);
+
+            keysToDelete.forEach((projectId) => {
+              store.delete(projectId);
+            });
+          };
+
+          keysRequest.onerror = () => {
+            reject(keysRequest.error);
+          };
+
+          transaction.oncomplete = () => {
+            resolve();
+          };
+
+          transaction.onerror = () => {
+            reject(transaction.error);
+          };
+
+          transaction.onabort = () => {
+            reject(transaction.error);
+          };
+        });
+      }
+      function formatStorageSize(bytes) {
+        if (bytes === undefined || bytes === null) {
+          return "不明";
+        }
+
+        if (bytes < 1024) {
+          return bytes + " B";
+        }
+
+        const kilobytes = bytes / 1024;
+
+        if (kilobytes < 1024) {
+          return kilobytes.toFixed(1) + " KB";
+        }
+
+        const megabytes = kilobytes / 1024;
+
+        if (megabytes < 1024) {
+          return megabytes.toFixed(1) + " MB";
+        }
+
+        const gigabytes = megabytes / 1024;
+
+        return gigabytes.toFixed(2) + " GB";
+      }
+      async function createHistorySummary(historyCount) {
+        const summary = document.createElement("div");
+
+        summary.style.padding = "10px";
+
+        summary.style.marginBottom = "12px";
+
+        summary.style.background = "#f3f3f3";
+
+        summary.style.border = "1px solid #bbb";
+
+        summary.style.borderRadius = "6px";
+
+        const countLine = document.createElement("div");
+
+        countLine.textContent = `履歴：${historyCount} / ${MAX_PROJECTS}件`;
+
+        countLine.style.fontWeight = "bold";
+
+        summary.appendChild(countLine);
+
+        const storageLine = document.createElement("div");
+
+        storageLine.style.marginTop = "5px";
+
+        if (navigator.storage && navigator.storage.estimate) {
+          try {
+            const estimate = await navigator.storage.estimate();
+
+            const usage = estimate.usage || 0;
+
+            const quota = estimate.quota || 0;
+
+            const usagePercent = quota > 0 ? (usage / quota) * 100 : 0;
+
+            storageLine.textContent =
+              "使用容量：" +
+              formatStorageSize(usage) +
+              " / " +
+              formatStorageSize(quota) +
+              "（" +
+              usagePercent.toFixed(1) +
+              "%）";
+
+            if (usagePercent >= 85) {
+              storageLine.style.color = "#b71c1c";
+
+              storageLine.style.fontWeight = "bold";
+            } else if (usagePercent >= 70) {
+              storageLine.style.color = "#e65100";
+
+              storageLine.style.fontWeight = "bold";
+            }
+          } catch (error) {
+            console.warn("容量情報を取得できませんでした", error);
+
+            storageLine.textContent = "使用容量：取得できません";
+          }
+        } else {
+          storageLine.textContent = "使用容量：このブラウザでは取得できません";
+        }
+
+        summary.appendChild(storageLine);
+
+        return summary;
+      }
+
       async function deleteProjectFromDB(projectId) {
         return new Promise((resolve, reject) => {
           const transaction = db.transaction(["projects"], "readwrite");
@@ -1751,9 +1892,21 @@
 
         content.innerHTML = "";
 
+        const historySummary = await createHistorySummary(historyList.length);
+
+        content.appendChild(historySummary);
+
         if (historyList.length === 0) {
-          content.textContent = "履歴なし";
+          const emptyMessage = document.createElement("div");
+
+          emptyMessage.textContent = "履歴なし";
+
+          emptyMessage.style.padding = "10px";
+
+          content.appendChild(emptyMessage);
+
           win.style.display = "block";
+
           return;
         }
 
@@ -1911,6 +2064,8 @@
       async function initializeApp() {
         try {
           await openDB();
+
+          await enforceProjectLimit();
 
           await loadModel();
 
