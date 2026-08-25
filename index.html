@@ -295,6 +295,76 @@
         #mobileToolbar button:active {
           background: #ff9800;
         }
+        #historyWindow {
+          top: 6px;
+          right: 6px;
+          bottom: 76px;
+          left: 6px;
+
+          width: auto;
+          height: auto;
+
+          box-sizing: border-box;
+          z-index: 15000;
+
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        #historyHeader {
+          box-sizing: border-box;
+          min-height: 46px;
+          padding: 8px 10px;
+
+          align-items: center;
+
+          font-size: 18px;
+          font-weight: bold;
+
+          cursor: default;
+          touch-action: none;
+        }
+
+        #historyHeader button {
+          min-width: 42px;
+          min-height: 36px;
+
+          border: 1px solid #999;
+          border-radius: 6px;
+
+          font-size: 20px;
+        }
+
+        #historyContent {
+          box-sizing: border-box;
+
+          height: calc(100% - 46px);
+
+          padding: 8px;
+          padding-bottom: 20px;
+
+          overflow-x: hidden;
+          overflow-y: auto;
+
+          -webkit-overflow-scrolling: touch;
+        }
+
+        #historyResizeHandle {
+          display: none;
+        }
+
+        .historyProjectCheckbox {
+          min-width: 24px;
+          width: 24px !important;
+
+          min-height: 24px;
+          height: 24px !important;
+        }
+
+        #historySelectionBar button {
+          min-height: 38px;
+          padding: 6px 10px;
+        }
       }
     </style>
   </head>
@@ -339,7 +409,13 @@
       />
       <hr />
       <button onclick="toggleNumber()">番号表示 ON/OFF</button>
+
       <hr />
+
+      <button onclick="openMobileHistory()">🕘 履歴</button>
+
+      <hr />
+
       <button onclick="closeMobileSettings()">閉じる</button>
     </div>
 
@@ -649,6 +725,10 @@
       );
 
       historyResizeHandle.onmousedown = (e) => {
+        if (isMobile) {
+          return;
+        }
+
         historyResizing = true;
 
         historyResizeStartX = e.clientX;
@@ -744,6 +824,11 @@
       }
       function closeMobileSettings() {
         document.getElementById("mobileSettingsPanel").style.display = "none";
+      }
+      async function openMobileHistory() {
+        closeMobileSettings();
+
+        await showHistory();
       }
       function mobileOpenFile() {
         document.getElementById("file").click();
@@ -873,6 +958,10 @@
         compareOffsetY = e.clientY - compareWindow.offsetTop;
       };
       historyHeader.onmousedown = (e) => {
+        if (isMobile) {
+          return;
+        }
+
         historyDrag = true;
 
         historyOffsetX = e.clientX - historyWindow.offsetLeft;
