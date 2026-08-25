@@ -1311,6 +1311,22 @@
         }
       }
       async function saveProject() {
+        if (photos.length === 0) {
+          alert("先に写真を読み込んでください");
+          return;
+        }
+
+        const memoInput = window.prompt(
+          "案件メモを入力してください。\n空欄でも保存できます。",
+          "",
+        );
+
+        if (memoInput === null) {
+          return;
+        }
+
+        const memo = memoInput.trim();
+
         let thumbnail = "";
 
         if (photos.length > 0) {
@@ -1341,6 +1357,7 @@
         });
         const projectData = {
           thumbnail,
+          memo,
           createdAt: new Date().toLocaleString("ja-JP", {
             year: "numeric",
             month: "2-digit",
@@ -1566,6 +1583,18 @@
 
           dateText.style.marginBottom = "10px";
 
+          const memoText = document.createElement("div");
+
+          memoText.textContent = project.memo
+            ? `メモ：${project.memo}`
+            : "メモ：なし";
+
+          memoText.style.marginBottom = "10px";
+
+          memoText.style.whiteSpace = "pre-wrap";
+
+          memoText.style.color = project.memo ? "#333" : "#777";
+
           const openButton = document.createElement("button");
 
           openButton.type = "button";
@@ -1579,6 +1608,7 @@
 
           details.appendChild(countText);
           details.appendChild(dateText);
+          details.appendChild(memoText);
           details.appendChild(openButton);
 
           card.appendChild(details);
