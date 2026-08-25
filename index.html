@@ -1844,6 +1844,31 @@
           };
         });
       }
+
+      async function deleteProjectsFromDB(projectIds) {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(["projects"], "readwrite");
+
+          const store = transaction.objectStore("projects");
+
+          projectIds.forEach((projectId) => {
+            store.delete(projectId);
+          });
+
+          transaction.oncomplete = () => {
+            resolve();
+          };
+
+          transaction.onerror = () => {
+            reject(transaction.error);
+          };
+
+          transaction.onabort = () => {
+            reject(transaction.error);
+          };
+        });
+      }
+
       async function deleteHistoryProject(project) {
         if (!project || project.id === undefined) {
           alert("削除対象の履歴IDが見つかりません");
@@ -1881,6 +1906,37 @@
           showMsg("❌ 履歴を削除できませんでした");
         }
       }
+
+      async function deleteSelectedHistoryProjects() {
+        const selectedIds = Array.from(selectedProjectIds);
+
+        if (selectedIds.length === 0) {
+          return;
+        }
+
+        const shouldDelete = window.confirm(
+          `選択した${selectedIds.length}件の履歴を削除しますか？\n\nこの操作は取り消せません。`,
+        );
+
+        if (!shouldDelete) {
+          return;
+        }
+
+        try {
+          await deleteProjectsFromDB(selectedIds);
+
+          selectedProjectIds.clear();
+
+          showMsg(`✅ ${selectedIds.length}件の履歴を削除しました`);
+
+          await showHistory();
+        } catch (error) {
+          console.error("❌ 履歴の一括削除に失敗しました", error);
+
+          showMsg("❌ 選択した履歴を削除できませんでした");
+        }
+      }
+
       async function getProjectHistory() {
         const projects = await getProjects();
 
@@ -1966,9 +2022,11 @@
 
         deleteButton.textContent = "🗑 選択項目を削除";
 
-        deleteButton.disabled = true;
+        deleteButton.style.color = "#b71c1c";
 
-        deleteButton.title = "一括削除は次のステップで追加します";
+        deleteButton.onclick = async () => {
+          await deleteSelectedHistoryProjects();
+        };
 
         selectionBar.appendChild(deleteButton);
 
