@@ -142,6 +142,54 @@
         border-right: 2px solid #999;
         border-bottom: 2px solid #999;
       }
+
+      #memoDialog {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 20000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #memoDialogBox {
+        box-sizing: border-box;
+        width: min(420px, calc(100vw - 40px));
+        background: white;
+        border: 2px solid #666;
+        border-radius: 10px;
+        padding: 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      }
+
+      #memoDialogBox h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      #projectMemo {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        min-height: 90px;
+        margin-top: 8px;
+        padding: 8px;
+        resize: vertical;
+        font-family: inherit;
+        font-size: 16px;
+      }
+
+      #memoDialogButtons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      #memoDialogButtons button {
+        padding: 7px 16px;
+      }
       /* ===== スマホ用 ===== */
       #rotateNotice {
         display: none;
@@ -528,6 +576,26 @@
       <div id="historyContent"></div>
 
       <div id="historyResizeHandle"></div>
+    </div>
+    <div id="memoDialog">
+      <div id="memoDialogBox">
+        <h3>💾 プロジェクト保存</h3>
+
+        <label for="projectMemo"> 案件メモ </label>
+
+        <textarea
+          id="projectMemo"
+          placeholder="例：土場名_椪番号_20260805"
+        ></textarea>
+
+        <div id="memoDialogButtons">
+          <button type="button" onclick="cancelProjectSave()">
+            キャンセル
+          </button>
+
+          <button type="button" onclick="confirmProjectSave()">保存</button>
+        </div>
+      </div>
     </div>
     <canvas id="cv"></canvas>
     <div id="mobileToolbar">
@@ -1310,137 +1378,163 @@
           a.click();
         }
       }
-      async function saveProject() {
+      function saveProject() {
         if (photos.length === 0) {
           alert("先に写真を読み込んでください");
+
           return;
         }
 
-        const memoInput = window.prompt(
-          "案件メモを入力してください。\n空欄でも保存できます。",
-          "",
-        );
+        const memoDialog = document.getElementById("memoDialog");
 
-        if (memoInput === null) {
-          return;
+        const projectMemo = document.getElementById("projectMemo");
+
+        projectMemo.value = "";
+
+        memoDialog.style.display = "flex";
+
+        setTimeout(() => {
+          projectMemo.focus();
+        }, 0);
+      }
+
+      function cancelProjectSave() {
+        const memoDialog = document.getElementById("memoDialog");
+
+        memoDialog.style.display = "none";
+      }
+      async function confirmProjectSave() {
+        const projectMemo = document.getElementById("projectMemo");
+
+        const memo = projectMemo.value.trim();
+
+        let fileHandle = null;
+
+        if (window.showSaveFilePicker) {
+          try {
+            fileHandle = await window.showSaveFilePicker({
+              suggestedName: "project.omc",
+
+              types: [
+                {
+                  description: "マルタ・カゾエール プロジェクト",
+
+                  accept: {
+                    "application/json": [".omc"],
+                  },
+                },
+              ],
+            });
+          } catch (error) {
+            if (error.name === "AbortError") {
+              showMsg("プロジェクト保存をキャンセルしました");
+
+              return;
+            }
+
+            console.error("保存先の選択に失敗しました", error);
+
+            showMsg("❌ 保存先を選択できませんでした");
+
+            return;
+          }
         }
 
-        const memo = memoInput.trim();
+        const memoDialog = document.getElementById("memoDialog");
 
-        const now = new Date();
-
-        const defaultFileName =
-          "project_" +
-          now.getFullYear() +
-          String(now.getMonth() + 1).padStart(2, "0") +
-          String(now.getDate()).padStart(2, "0") +
-          "_" +
-          String(now.getHours()).padStart(2, "0") +
-          String(now.getMinutes()).padStart(2, "0") +
-          ".omc";
-
-        const fileNameInput = window.prompt(
-          "保存するファイル名を入力してください。",
-          defaultFileName,
-        );
-
-        if (fileNameInput === null) {
-          return;
-        }
-
-        let fileName = fileNameInput.trim();
-
-        if (!fileName) {
-          fileName = defaultFileName;
-        }
-
-        if (!fileName.toLowerCase().endsWith(".omc")) {
-          fileName += ".omc";
-        }
-
-        let thumbnail = "";
-
-        const thumbCanvas = document.createElement("canvas");
-
-        thumbCanvas.width = 200;
-
-        thumbCanvas.height = 150;
-
-        const thumbCtx = thumbCanvas.getContext("2d");
-
-        thumbCtx.drawImage(photos[0].img, 0, 0, 200, 150);
-
-        thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.7);
-
-        const savePhotos = photos.map((photo) => {
-          const canvas = document.createElement("canvas");
-
-          canvas.width = photo.img.width;
-
-          canvas.height = photo.img.height;
-
-          const canvasContext = canvas.getContext("2d");
-
-          canvasContext.drawImage(photo.img, 0, 0);
-
-          return {
-            name: photo.name,
-
-            imageData: canvas.toDataURL("image/png"),
-
-            pts: photo.pts,
-
-            excludeRects: photo.excludeRects,
-
-            excludePolygons: photo.excludePolygons,
-          };
-        });
-
-        const projectData = {
-          thumbnail,
-          memo,
-
-          createdAt: now.toLocaleString("ja-JP", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-
-          confidence: confThreshold.value,
-
-          nms: nms.value,
-
-          totalCount: photos.reduce((sum, photo) => sum + photo.pts.length, 0),
-
-          photos: savePhotos,
-        };
-
-        const json = JSON.stringify(projectData);
-
-        const blob = new Blob([json], {
-          type: "application/json",
-        });
+        memoDialog.style.display = "none";
 
         try {
-          const downloadUrl = URL.createObjectURL(blob);
+          const thumbCanvas = document.createElement("canvas");
 
-          const downloadLink = document.createElement("a");
+          thumbCanvas.width = 200;
+          thumbCanvas.height = 150;
 
-          downloadLink.href = downloadUrl;
+          const thumbContext = thumbCanvas.getContext("2d");
 
-          downloadLink.download = fileName;
+          thumbContext.drawImage(photos[0].img, 0, 0, 200, 150);
 
-          document.body.appendChild(downloadLink);
+          const thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.7);
 
-          downloadLink.click();
+          const savePhotos = photos.map((photo) => {
+            const canvas = document.createElement("canvas");
 
-          downloadLink.remove();
+            canvas.width = photo.img.width;
 
-          setTimeout(() => {
-            URL.revokeObjectURL(downloadUrl);
-          }, 1000);
+            canvas.height = photo.img.height;
+
+            const canvasContext = canvas.getContext("2d");
+
+            canvasContext.drawImage(photo.img, 0, 0);
+
+            return {
+              name: photo.name,
+
+              imageData: canvas.toDataURL("image/png"),
+
+              pts: photo.pts,
+
+              excludeRects: photo.excludeRects,
+
+              excludePolygons: photo.excludePolygons,
+            };
+          });
+
+          const projectData = {
+            thumbnail,
+            memo,
+
+            createdAt: new Date().toLocaleString("ja-JP", {
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+
+            confidence: confThreshold.value,
+
+            nms: nms.value,
+
+            totalCount: photos.reduce(
+              (sum, photo) => sum + photo.pts.length,
+              0,
+            ),
+
+            photos: savePhotos,
+          };
+
+          const json = JSON.stringify(projectData);
+
+          const blob = new Blob([json], {
+            type: "application/json",
+          });
+
+          if (fileHandle) {
+            const writable = await fileHandle.createWritable();
+
+            await writable.write(blob);
+
+            await writable.close();
+          } else {
+            const downloadUrl = URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement("a");
+
+            downloadLink.href = downloadUrl;
+
+            downloadLink.download = "project.omc";
+
+            document.body.appendChild(downloadLink);
+
+            downloadLink.click();
+
+            downloadLink.remove();
+
+            setTimeout(() => {
+              URL.revokeObjectURL(downloadUrl);
+            }, 1000);
+          }
 
           await saveProjectToDB(projectData);
 
