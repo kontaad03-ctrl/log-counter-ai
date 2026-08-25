@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>マルタ・カゾエール</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"></script>
 
     <style>
       body {
@@ -1617,31 +1617,74 @@
 
         win.style.display = "block";
       }
+      let modelLoadingPromise = null;
+
       async function loadModel() {
         updateNmsLabel();
-
         nms.oninput = updateNmsLabel;
 
         updateConfLabel();
-
         confThreshold.oninput = updateConfLabel;
 
+        if (session) {
+          return session;
+        }
+
+        if (modelLoadingPromise) {
+          return modelLoadingPromise;
+        }
+
+        ort.env.wasm.numThreads = 1;
+        ort.env.wasm.proxy = false;
+
+        ort.env.wasm.wasmPaths =
+          "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/";
+
+        modelLoadingPromise = ort.InferenceSession.create(
+          "./log_counter_v6.onnx",
+          {
+            executionProviders: ["wasm"],
+          },
+        );
+
         try {
-          session = await ort.InferenceSession.create("./log_counter_v6.onnx");
+          session = await modelLoadingPromise;
 
           console.log("✅ ONNXロード成功");
 
           console.log("入力名=", session.inputNames);
+
           console.log("出力名=", session.outputNames);
+
+          return session;
         } catch (e) {
+          session = null;
+
           console.error("❌ ONNXロード失敗", e);
+
+          throw e;
+        } finally {
+          modelLoadingPromise = null;
         }
       }
 
-      openDB();
-      loadModel();
-      checkOrientation();
-      window.addEventListener("resize", checkOrientation);
+      async function initializeApp() {
+        try {
+          await openDB();
+
+          await loadModel();
+
+          checkOrientation();
+
+          window.addEventListener("resize", checkOrientation);
+        } catch (error) {
+          console.error("❌ アプリ初期化失敗", error);
+
+          showMsg("❌ AIモデルの読み込みに失敗しました");
+        }
+      }
+
+      initializeApp();
 
       async function testInference() {
         console.log("session=", session);
