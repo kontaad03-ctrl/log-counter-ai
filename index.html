@@ -2054,7 +2054,7 @@
         const projectJson = JSON.stringify(project);
 
         return new File([projectJson], createProjectFileName(project), {
-          type: "application/json",
+          type: "application/octet-stream",
         });
       }
 
