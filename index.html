@@ -1678,6 +1678,64 @@
         });
       }
 
+      async function deleteProjectFromDB(projectId) {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(["projects"], "readwrite");
+
+          const store = transaction.objectStore("projects");
+
+          store.delete(projectId);
+
+          transaction.oncomplete = () => {
+            resolve();
+          };
+
+          transaction.onerror = () => {
+            reject(transaction.error);
+          };
+
+          transaction.onabort = () => {
+            reject(transaction.error);
+          };
+        });
+      }
+      async function deleteHistoryProject(project) {
+        if (!project || project.id === undefined) {
+          alert("削除対象の履歴IDが見つかりません");
+
+          return;
+        }
+
+        const projectInfo = [
+          project.createdAt || "日時不明",
+
+          `${project.totalCount ?? 0}本`,
+
+          project.memo ? `メモ：${project.memo}` : "メモ：なし",
+        ].join("\n");
+
+        const shouldDelete = window.confirm(
+          "この履歴を削除しますか？\n\n" +
+            projectInfo +
+            "\n\nこの操作は取り消せません。",
+        );
+
+        if (!shouldDelete) {
+          return;
+        }
+
+        try {
+          await deleteProjectFromDB(project.id);
+
+          showMsg("✅ 履歴を削除しました");
+
+          await showHistory();
+        } catch (error) {
+          console.error("❌ 履歴削除失敗", error);
+
+          showMsg("❌ 履歴を削除できませんでした");
+        }
+      }
       async function getProjectHistory() {
         const projects = await getProjects();
 
@@ -1773,10 +1831,25 @@
             closeHistory();
           };
 
+          const deleteButton = document.createElement("button");
+
+          deleteButton.type = "button";
+
+          deleteButton.textContent = "🗑 削除";
+
+          deleteButton.style.marginLeft = "8px";
+
+          deleteButton.style.color = "#b71c1c";
+
+          deleteButton.onclick = async () => {
+            await deleteHistoryProject(project);
+          };
+
           details.appendChild(countText);
           details.appendChild(dateText);
           details.appendChild(memoText);
           details.appendChild(openButton);
+          details.appendChild(deleteButton);
 
           card.appendChild(details);
           content.appendChild(card);
