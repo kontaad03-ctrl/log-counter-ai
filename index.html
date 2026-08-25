@@ -2053,8 +2053,10 @@
       function createProjectShareFile(project) {
         const projectJson = JSON.stringify(project);
 
-        return new File([projectJson], createProjectFileName(project), {
-          type: "application/octet-stream",
+        const testFileName = createProjectFileName(project) + ".txt";
+
+        return new File([projectJson], testFileName, {
+          type: "text/plain",
         });
       }
 
