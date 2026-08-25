@@ -1943,6 +1943,117 @@
         return projects.reverse();
       }
 
+      function createProjectFileName(project) {
+        const rawMemo =
+          project.memo && project.memo.trim() ? project.memo.trim() : "project";
+
+        const safeMemo = rawMemo
+          .replace(/[\\/:*?"<>|]/g, "_")
+          .replace(/\s+/g, "_")
+          .slice(0, 60);
+
+        const dateText = project.createdAt
+          ? project.createdAt.replace(/[^0-9]/g, "").slice(0, 12)
+          : "";
+
+        const projectId = project.id !== undefined ? "_" + project.id : "";
+
+        return safeMemo + (dateText ? "_" + dateText : "") + projectId + ".omc";
+      }
+
+      function createProjectShareFile(project) {
+        const projectJson = JSON.stringify(project);
+
+        return new File([projectJson], createProjectFileName(project), {
+          type: "application/json",
+        });
+      }
+
+      function downloadProjectFile(project) {
+        const projectJson = JSON.stringify(project);
+
+        const projectBlob = new Blob([projectJson], {
+          type: "application/json",
+        });
+
+        const downloadUrl = URL.createObjectURL(projectBlob);
+
+        const downloadLink = document.createElement("a");
+
+        downloadLink.href = downloadUrl;
+
+        downloadLink.download = createProjectFileName(project);
+
+        document.body.appendChild(downloadLink);
+
+        downloadLink.click();
+        downloadLink.remove();
+
+        setTimeout(() => {
+          URL.revokeObjectURL(downloadUrl);
+        }, 1000);
+      }
+
+      async function shareHistoryProjects(projects) {
+        if (!projects || projects.length === 0) {
+          return;
+        }
+
+        const shareFiles = projects.map((project) =>
+          createProjectShareFile(project),
+        );
+
+        const shareData = {
+          title: "マルタ・カゾエール プロジェクト",
+
+          text:
+            projects.length === 1
+              ? "プロジェクトファイルを共有します。"
+              : `${projects.length}件のプロジェクトファイルを共有します。`,
+
+          files: shareFiles,
+        };
+
+        const canShareFiles =
+          typeof navigator.share === "function" &&
+          typeof navigator.canShare === "function" &&
+          navigator.canShare(shareData);
+
+        if (!canShareFiles) {
+          if (projects.length === 1) {
+            downloadProjectFile(projects[0]);
+
+            showMsg("共有非対応のためOMCファイルを保存しました");
+          } else {
+            alert(
+              "この端末またはブラウザでは、複数のOMCファイルをまとめて共有できません。\n\n各履歴の「共有」ボタンから1件ずつ共有してください。",
+            );
+          }
+
+          return;
+        }
+
+        try {
+          await navigator.share(shareData);
+
+          showMsg(
+            projects.length === 1
+              ? "✅ プロジェクトを共有しました"
+              : `✅ ${projects.length}件のプロジェクトを共有しました`,
+          );
+        } catch (error) {
+          if (error.name === "AbortError") {
+            showMsg("共有をキャンセルしました");
+
+            return;
+          }
+
+          console.error("❌ プロジェクト共有失敗", error);
+
+          showMsg("❌ プロジェクトを共有できませんでした");
+        }
+      }
+
       function createHistorySelectionBar(historyList) {
         const selectionBar = document.createElement("div");
 
@@ -2010,9 +2121,13 @@
 
         shareButton.textContent = "共有";
 
-        shareButton.disabled = true;
+        shareButton.onclick = async () => {
+          const selectedProjects = historyList.filter((project) =>
+            selectedProjectIds.has(project.id),
+          );
 
-        shareButton.title = "共有機能は次のステップで追加します";
+          await shareHistoryProjects(selectedProjects);
+        };
 
         selectionBar.appendChild(shareButton);
 
@@ -2210,6 +2325,18 @@
             closeHistory();
           };
 
+          const shareButton = document.createElement("button");
+
+          shareButton.type = "button";
+
+          shareButton.textContent = "共有";
+
+          shareButton.style.marginLeft = "8px";
+
+          shareButton.onclick = async () => {
+            await shareHistoryProjects([project]);
+          };
+
           const deleteButton = document.createElement("button");
 
           deleteButton.type = "button";
@@ -2228,6 +2355,7 @@
           details.appendChild(dateText);
           details.appendChild(memoText);
           details.appendChild(openButton);
+          details.appendChild(shareButton);
           details.appendChild(deleteButton);
 
           card.appendChild(details);
