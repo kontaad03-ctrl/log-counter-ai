@@ -1327,36 +1327,35 @@
 
         const memo = memoInput.trim();
 
-        let fileHandle = null;
+        const now = new Date();
 
-        if (window.showSaveFilePicker) {
-          try {
-            fileHandle = await window.showSaveFilePicker({
-              suggestedName: "project.omc",
+        const defaultFileName =
+          "project_" +
+          now.getFullYear() +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          String(now.getDate()).padStart(2, "0") +
+          "_" +
+          String(now.getHours()).padStart(2, "0") +
+          String(now.getMinutes()).padStart(2, "0") +
+          ".omc";
 
-              types: [
-                {
-                  description: "マルタ・カゾエール プロジェクト",
+        const fileNameInput = window.prompt(
+          "保存するファイル名を入力してください。",
+          defaultFileName,
+        );
 
-                  accept: {
-                    "application/json": [".omc"],
-                  },
-                },
-              ],
-            });
-          } catch (error) {
-            if (error.name === "AbortError") {
-              showMsg("プロジェクト保存をキャンセルしました");
+        if (fileNameInput === null) {
+          return;
+        }
 
-              return;
-            }
+        let fileName = fileNameInput.trim();
 
-            console.error("保存先の選択に失敗しました", error);
+        if (!fileName) {
+          fileName = defaultFileName;
+        }
 
-            showMsg("❌ 保存先を選択できませんでした");
-
-            return;
-          }
+        if (!fileName.toLowerCase().endsWith(".omc")) {
+          fileName += ".omc";
         }
 
         let thumbnail = "";
@@ -1364,6 +1363,7 @@
         const thumbCanvas = document.createElement("canvas");
 
         thumbCanvas.width = 200;
+
         thumbCanvas.height = 150;
 
         const thumbCtx = thumbCanvas.getContext("2d");
@@ -1372,27 +1372,27 @@
 
         thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.7);
 
-        const savePhotos = photos.map((p) => {
+        const savePhotos = photos.map((photo) => {
           const canvas = document.createElement("canvas");
 
-          canvas.width = p.img.width;
+          canvas.width = photo.img.width;
 
-          canvas.height = p.img.height;
+          canvas.height = photo.img.height;
 
-          const x = canvas.getContext("2d");
+          const canvasContext = canvas.getContext("2d");
 
-          x.drawImage(p.img, 0, 0);
+          canvasContext.drawImage(photo.img, 0, 0);
 
           return {
-            name: p.name,
+            name: photo.name,
 
             imageData: canvas.toDataURL("image/png"),
 
-            pts: p.pts,
+            pts: photo.pts,
 
-            excludeRects: p.excludeRects,
+            excludeRects: photo.excludeRects,
 
-            excludePolygons: p.excludePolygons,
+            excludePolygons: photo.excludePolygons,
           };
         });
 
@@ -1400,7 +1400,7 @@
           thumbnail,
           memo,
 
-          createdAt: new Date().toLocaleString("ja-JP", {
+          createdAt: now.toLocaleString("ja-JP", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -1412,7 +1412,7 @@
 
           nms: nms.value,
 
-          totalCount: photos.reduce((s, p) => s + p.pts.length, 0),
+          totalCount: photos.reduce((sum, photo) => sum + photo.pts.length, 0),
 
           photos: savePhotos,
         };
@@ -1424,35 +1424,29 @@
         });
 
         try {
-          if (fileHandle) {
-            const writable = await fileHandle.createWritable();
+          const downloadUrl = URL.createObjectURL(blob);
 
-            await writable.write(blob);
+          const downloadLink = document.createElement("a");
 
-            await writable.close();
-          } else {
-            const url = URL.createObjectURL(blob);
+          downloadLink.href = downloadUrl;
 
-            const link = document.createElement("a");
+          downloadLink.download = fileName;
 
-            link.href = url;
+          document.body.appendChild(downloadLink);
 
-            link.download = "project.omc";
+          downloadLink.click();
 
-            document.body.appendChild(link);
+          downloadLink.remove();
 
-            link.click();
-
-            link.remove();
-
-            URL.revokeObjectURL(url);
-          }
+          setTimeout(() => {
+            URL.revokeObjectURL(downloadUrl);
+          }, 1000);
 
           await saveProjectToDB(projectData);
 
           showMsg("✅ プロジェクト保存完了");
         } catch (error) {
-          console.error("プロジェクト保存失敗", error);
+          console.error("❌ プロジェクト保存失敗", error);
 
           showMsg("❌ プロジェクト保存に失敗しました");
         }
