@@ -690,6 +690,8 @@
 
       const MAX_PROJECTS = 30;
 
+      const selectedProjectIds = new Set();
+
       let compareDrag = false;
       let compareOffsetX = 0;
       let compareOffsetY = 0;
@@ -930,6 +932,8 @@
         },
       );
       function closeHistory() {
+        selectedProjectIds.clear();
+
         document.getElementById("historyWindow").style.display = "none";
       }
       function updateCompareView() {
@@ -1883,6 +1887,132 @@
         return projects.reverse();
       }
 
+      function createHistorySelectionBar(historyList) {
+        const selectionBar = document.createElement("div");
+
+        selectionBar.id = "historySelectionBar";
+
+        selectionBar.style.display = "none";
+
+        selectionBar.style.position = "sticky";
+
+        selectionBar.style.top = "0";
+
+        selectionBar.style.zIndex = "20";
+
+        selectionBar.style.boxSizing = "border-box";
+
+        selectionBar.style.width = "100%";
+
+        selectionBar.style.padding = "10px";
+
+        selectionBar.style.marginBottom = "10px";
+
+        selectionBar.style.background = "#fff3cd";
+
+        selectionBar.style.border = "1px solid #d6b656";
+
+        selectionBar.style.borderRadius = "6px";
+
+        selectionBar.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+
+        selectionBar.style.flexWrap = "wrap";
+
+        selectionBar.style.alignItems = "center";
+
+        selectionBar.style.gap = "8px";
+
+        const selectionCount = document.createElement("span");
+
+        selectionCount.id = "historySelectionCount";
+
+        selectionCount.style.fontWeight = "bold";
+
+        selectionBar.appendChild(selectionCount);
+
+        const selectAllButton = document.createElement("button");
+
+        selectAllButton.type = "button";
+
+        selectAllButton.textContent = "すべて選択";
+
+        selectAllButton.onclick = () => {
+          historyList.forEach((project) => {
+            if (project.id !== undefined) {
+              selectedProjectIds.add(project.id);
+            }
+          });
+
+          updateHistorySelectionUI();
+        };
+
+        selectionBar.appendChild(selectAllButton);
+
+        const shareButton = document.createElement("button");
+
+        shareButton.type = "button";
+
+        shareButton.textContent = "共有";
+
+        shareButton.disabled = true;
+
+        shareButton.title = "共有機能は次のステップで追加します";
+
+        selectionBar.appendChild(shareButton);
+
+        const deleteButton = document.createElement("button");
+
+        deleteButton.type = "button";
+
+        deleteButton.textContent = "🗑 選択項目を削除";
+
+        deleteButton.disabled = true;
+
+        deleteButton.title = "一括削除は次のステップで追加します";
+
+        selectionBar.appendChild(deleteButton);
+
+        const clearButton = document.createElement("button");
+
+        clearButton.type = "button";
+
+        clearButton.textContent = "選択解除";
+
+        clearButton.onclick = () => {
+          selectedProjectIds.clear();
+
+          updateHistorySelectionUI();
+        };
+
+        selectionBar.appendChild(clearButton);
+
+        return selectionBar;
+      }
+
+      function updateHistorySelectionUI() {
+        const selectionBar = document.getElementById("historySelectionBar");
+
+        const selectionCount = document.getElementById("historySelectionCount");
+
+        const checkboxes = document.querySelectorAll(".historyProjectCheckbox");
+
+        checkboxes.forEach((checkbox) => {
+          const projectId = Number(checkbox.dataset.projectId);
+
+          checkbox.checked = selectedProjectIds.has(projectId);
+        });
+
+        if (!selectionBar || !selectionCount) {
+          return;
+        }
+
+        const selectedCount = selectedProjectIds.size;
+
+        selectionCount.textContent = `${selectedCount}件選択中`;
+
+        selectionBar.style.display = selectedCount > 0 ? "flex" : "none";
+      }
+
       async function showHistory() {
         const win = document.getElementById("historyWindow");
 
@@ -1891,6 +2021,12 @@
         const historyList = await getProjectHistory();
 
         content.innerHTML = "";
+
+        selectedProjectIds.clear();
+
+        const selectionBar = createHistorySelectionBar(historyList);
+
+        content.appendChild(selectionBar);
 
         const historySummary = await createHistorySummary(historyList.length);
 
@@ -1924,6 +2060,38 @@
           card.style.gap = "10px";
 
           card.style.alignItems = "center";
+
+          const checkbox = document.createElement("input");
+
+          checkbox.type = "checkbox";
+
+          checkbox.className = "historyProjectCheckbox";
+
+          checkbox.dataset.projectId = String(project.id);
+
+          checkbox.checked = selectedProjectIds.has(project.id);
+
+          checkbox.style.width = "20px";
+
+          checkbox.style.height = "20px";
+
+          checkbox.style.flexShrink = "0";
+
+          checkbox.setAttribute(
+            "aria-label",
+            `${project.createdAt || "日時不明"}の履歴を選択`,
+          );
+
+          checkbox.onchange = () => {
+            if (checkbox.checked) {
+              selectedProjectIds.add(project.id);
+            } else {
+              selectedProjectIds.delete(project.id);
+            }
+
+            updateHistorySelectionUI();
+          };
+          card.appendChild(checkbox);
 
           if (project.thumbnail) {
             const thumbnail = document.createElement("img");
