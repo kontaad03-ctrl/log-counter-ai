@@ -190,7 +190,71 @@
       #memoDialogButtons button {
         padding: 7px 16px;
       }
-      
+      #mobileHelpWindow {
+        display: none;
+        position: fixed;
+        top: 6px;
+        right: 6px;
+        bottom: 76px;
+        left: 6px;
+        box-sizing: border-box;
+        background: white;
+        border: 2px solid #666;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        z-index: 16000;
+      }
+
+      #mobileHelpHeader {
+        box-sizing: border-box;
+        min-height: 46px;
+        padding: 8px 10px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      #mobileHelpHeader button {
+        min-width: 42px;
+        min-height: 36px;
+        border: 1px solid #999;
+        border-radius: 6px;
+        font-size: 20px;
+      }
+
+      #mobileHelpContent {
+        box-sizing: border-box;
+        height: calc(100% - 46px);
+        padding: 14px;
+        padding-bottom: 24px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        font-size: 16px;
+        line-height: 1.7;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .mobileHelpSection {
+        margin-bottom: 18px;
+      }
+
+      .mobileHelpSection b {
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+      }
+
+      .mobileHelpNote {
+        padding: 10px;
+        background: #fff3cd;
+        border: 1px solid #d6b656;
+        border-radius: 6px;
+      }
+
       /* ===== スマホ用 ===== */
       #rotateNotice {
         display: none;
@@ -413,6 +477,10 @@
 
       <hr />
 
+      <button onclick="openMobileHelp()">❓ 使い方</button>
+
+      <hr />
+
       <button onclick="openMobileHistory()">🕘 履歴</button>
 
       <hr />
@@ -457,132 +525,160 @@
       <button onclick="showHistory()">🕘履歴</button>
 
       <div class="help" id="helpPanel">
-        <b>🚀 クイックスタート</b><br /><br />
-        📂 写真選択
-        <br />
-        ↓
-        <br />
-        🤖 自動検出
-        <br />
-        ↓
-        <br />
-        ✏ マーカー手修正
-        <br />
-        ↓
-        <br />
-        💾 保存
+        <b>🚀 クイックスタート</b>
+
         <br /><br />
-        💡 検出したくない範囲がある場合は
+
+        1.「📷写真読込」から写真を選択!
         <br />
-        🚫 矩形除外
+        ↓
         <br />
-        🔺 ポリゴン除外
+        2. 必要な場合は除外範囲を設定してみよう
         <br />
-        をご利用ください。
+        ↓
         <br />
-        その際に、 他の写真の除外設定を参考にしたい場合は、
+        3.「🤖自動検出」を押せば、それなりの精度で丸太を検出
         <br />
-        タブを右クリックすると比較画像を表示できます。
+        ↓
+        <br />
+        4. マーカーを追加・移動・削除して修正！！
+        <br />
+        ↓
+        <br />
+        5.「💾プロジェクト保存」で作業内容を保存！
+        <br />
+        ↓
+        <br />
+        6. 必要に応じて「CSV保存」で集計結果も出力可能！
+
         <hr />
 
         <b>📖 クイックマニュアル</b>
-        <br /><br />
-
-        ■ 写真の読み込み
-        <br />
-        01.「ファイルの選択」で写真を選択します（複数選択可）
-        <br />
-        02.タブをクリックすると写真を切り替えできます
 
         <br /><br />
 
-        ■ 自動検出
+        <b>■ 写真の読み込み</b>
         <br />
-        03.「🤖 自動検出」で丸太を自動検出します
+        ・「📷写真読込」から写真を選択します
         <br />
-        04.「重なり許容度」で検出結果を調整できます（デフォルト設定値だと同じ丸太にマーカーが複数ついたりする場合があるので、その時は許容度を下げて再度自動検出してネ）
+        ・複数の写真をまとめて選択できます
         <br />
-        05.必要に応じて手動で修正してください
+        ・写真タブをクリックすると、表示する写真を切り替えられます
+        <br />
+        ・写真タブには、各写真の現在の本数が表示されます
 
         <br /><br />
 
-        ■ マーカー編集
+        <b>■ 自動検出</b>
         <br />
-        06.左クリックでマーカーを追加します
+        ・「🤖自動検出」で表示中の写真を解析します
         <br />
-        07.長押しドラッグで移動できます
+        ・検出信頼度の初期値は20%です
         <br />
-        08.右クリックで削除できます
+        ・重なり許容度の初期値は0.30です
         <br />
-        09.「↩ 元に戻す」で直前の操作を取り消せます
+        ・同じ丸太に複数のマーカーが付く場合は、重なり許容度を下げて再度検出してください
         <br />
-        10.「🚮 マーカーを全削除」で現在の写真のマーカーを削除できます
+        ・誤検出が多い場合は、検出信頼度を上げて再度検出してください
+        <br />
+        ・自動検出をやり直すと、表示中の写真のマーカーは新しい結果へ置き換わります
 
         <br /><br />
 
-        ■ 除外機能
+        <b>■ マーカー操作</b>
         <br />
-        11.「🚫 矩形除外」を押すと除外エリアモードになります
+        ・左クリックでマーカーを追加します
         <br />
-        12.ドラッグで矩形の除外範囲を作成できます
+        ・マーカーを長押ししてドラッグすると移動できます
         <br />
-        13.除外エリア内はAI検出対象から除外されます
+        ・マーカーを右クリックすると削除できます
         <br />
-        14.除外エリアは右クリックで削除できます
+        ・「↩元に戻す」で直前の操作を取り消せます
         <br />
-        15.通常の操作に戻る場合は「🚫 矩形除外」をもう一度押してください
-
-        <br /><br />
-        16.「🔺 ポリゴン除外」を押すとポリゴン除外モードになります
+        ・「🚮マーカーを全削除」で表示中写真のマーカーをすべて削除できます
         <br />
-        17.左クリックで頂点を追加します
-        <br />
-        18.ダブルクリックでポリゴンを確定します
-        <br />
-        19.ポリゴン内はAI検出対象から除外されます
-        <br />
-        20.ポリゴンは右クリックで削除できます
-        <br />
-        21.通常の操作に戻る場合は「🔺 ポリゴン除外」をもう一度押してください
+        ・番号表示、マーカーサイズ、番号サイズ、色を変更できます
 
         <br /><br />
 
-        ■ 表示操作
+        <b>■ 除外範囲</b>
         <br />
-        22.マーカーサイズを変更できます
+        ・「🚫矩形除外」を押し、写真上をドラッグすると矩形を作成できます
         <br />
-        23.番号サイズを変更できます
+        ・矩形除外モード中に除外範囲を右クリックすると削除できます
         <br />
-        24.Ctrl＋マウスホイールで拡大・縮小できます
-
-        <br /><br />
-        ■ 比較画像機能
+        ・「🔺ポリゴン除外」を押し、左クリックで頂点を3点以上追加します
         <br />
-        25.他の写真タブを右クリックすると比較画像を表示できます
+        ・ダブルクリックするとポリゴンを確定できます
         <br />
-        26.比較画像には、その写真で設定済みの除外矩形・除外ポリゴンが表示されます
+        ・ポリゴン除外モード中にポリゴン内を右クリックすると削除できます
         <br />
-        27.過去に設定した除外範囲を確認しながら現在の写真の除外設定ができます
-        <br />
-        28.比較画像はマウスホイールで拡大・縮小できます
-        <br />
-        29.比較画像はドラッグして上下左右へ移動できます
-        <br />
-        30.比較画像ウィンドウはドラッグして移動できます
-        <br />
-        31.比較画像ウィンドウ右下のハンドルをドラッグするとサイズ変更できます
-        <br />
-        32.比較画像右上の「✕」で閉じることができます
+        ・除外範囲内は自動検出の対象外だヨ
 
         <br /><br />
 
-        ■ 保存
+        <b>■ 表示操作・比較画像</b>
         <br />
-        33.「💾プロジェクト保存」で作業内容を保存できます
+        ・Ctrlキーを押しながらマウスホイールを回すと拡大・縮小できます
         <br />
-        34.「📂プロジェクト読込」で保存済み案件を再開できます
+        ・写真をダブルクリックすると倍率を100%へ戻せます
         <br />
-        35.「CSV保存」で集計結果を出力できます
+        ・現在表示していない写真タブを右クリックすると比較画像を表示できます
+        <br />
+        ・比較画像には、対象写真に設定した除外範囲も表示されます
+        <br />
+        ・比較画像は拡大・縮小、画像移動、ウインドウ移動、サイズ変更ができます
+
+        <br /><br />
+
+        <b>■ プロジェクト保存・読込</b>
+        <br />
+        ・「💾プロジェクト保存」を押し、案件メモを入力します
+        <br />
+        ・メモは空欄でも保存できちゃうよ
+        <br />
+        ・保存先とファイル名を指定し、「.omc」ファイルとして保存します（独自の拡張子。Original
+        Maruta Counterの略っぽい）
+        <br />
+        ・写真、マーカー、除外範囲、検出設定がまとめて保存されます
+        <br />
+        ・「📂プロジェクト読込」から保存済みの「.omc」を開けます
+
+        <br /><br />
+
+        <b>■ 履歴</b>
+        <br />
+        ・「🕘履歴」で保存済みプロジェクトの履歴を表示できます
+        <br />
+        ・サムネイル、検出本数、保存日時、案件メモが表示されます
+        <br />
+        ・「開く」でプロジェクトを復元できます
+        <br />
+        ・「🗑削除」で個別に削除できます
+        <br />
+        ・チェックボックスで複数選択し、まとめて削除できます
+        <br />
+        ・履歴は最新30件まで保存されます
+        <br />
+        ・31件目以降は、古い履歴から自動的に削除されます
+        <br />
+        ・履歴を削除しても、PCへ保存した「.omc」ファイルは削除されません
+
+        <br /><br />
+
+        <b>■ CSV保存</b>
+        <br />
+        ・「CSV保存」で写真ごとの本数と合計本数を保存できます
+        <br />
+        ・CSVファイルは表計算ソフトなどで開くことができます
+
+        <br /><br />
+
+        <b>■ データ保管について</b>
+        <br />
+        ・重要な案件は、履歴だけに頼らず「.omc」ファイルを保管してください
+        <br />
+        ・ブラウザデータを削除すると、履歴も消える可能性があります
       </div>
       <br />
       <div id="tabs"></div>
@@ -653,6 +749,100 @@
       <div id="historyContent"></div>
 
       <div id="historyResizeHandle"></div>
+    </div>
+    <div id="mobileHelpWindow">
+      <div id="mobileHelpHeader">
+        <span>❓ スマホ版 かんたん操作</span>
+
+        <button type="button" onclick="closeMobileHelp()">✕</button>
+      </div>
+
+      <div id="mobileHelpContent">
+        <div class="mobileHelpSection">
+          <b>🚀 基本の流れ</b>
+
+          1. 端末を横向きにします
+          <br />
+          2.「📂読込」で写真を選択します
+          <br />
+          3. 必要な場合は「🚫除外」で除外範囲を設定します
+          <br />
+          4.「🤖検出」で丸太を自動検出します
+          <br />
+          5. マーカーを追加・削除して結果を修正します
+          <br />
+          6.「💾保存」でプロジェクトを保存します
+        </div>
+
+        <div class="mobileHelpSection">
+          <b>✏ マーカー操作</b>
+
+          写真をタップすると、マーカーを追加できます。
+          <br />
+          削除したいマーカーを長押しすると、マーカーを削除できます。
+          <br />
+          スマホ版ではマーカーの移動はできません。
+        </div>
+
+        <div class="mobileHelpSection">
+          <b>🚫 除外範囲</b>
+
+          「🚫除外」を押し、写真上をタップして頂点を3点以上追加します。
+          <br />
+          「✅確定」で除外範囲を確定します。
+          <br />
+          「❌取消」で入力中の頂点を取り消せます。
+          <br />
+          「🔙終了」で通常操作へ戻ります。
+        </div>
+
+        <div class="mobileHelpSection">
+          <b>⚙ 設定</b>
+
+          左上の「⚙」から、次の設定を変更できます。
+          <br />
+          ・塗り色
+          <br />
+          ・枠色
+          <br />
+          ・マーカーサイズ
+          <br />
+          ・番号サイズ
+          <br />
+          ・重なり許容度
+          <br />
+          ・検出信頼度
+          <br />
+          ・番号表示
+          <br /><br />
+          初期設定は、検出信頼度20%、重なり許容度0.30です。
+        </div>
+
+        <div class="mobileHelpSection">
+          <b>🕘 履歴</b>
+
+          左上の「⚙」から「🕘履歴」を開けます。
+          <br />
+          履歴から案件を開く、個別削除、複数選択削除ができます。
+          <br />
+          履歴は最新30件まで保存されます。
+          <br />
+          31件目以降は、古い履歴から自動的に削除されます。
+        </div>
+
+        <div class="mobileHelpSection">
+          <b>💻 PCへ転送する場合</b>
+
+          スマホに保存された「.omc」ファイルを、職場指定のPrimeDriveへアップロードしてください。
+          <br /><br />
+          PCで期限内にダウンロードし、PC版の「📂プロジェクト読込」から開いてください。
+        </div>
+
+        <div class="mobileHelpNote">
+          PrimeDriveはファイル転送用です。
+          必要なプロジェクトは、PC側の所定の保存場所で保管してください。
+        </div>
+      </div>
     </div>
     <div id="memoDialog">
       <div id="memoDialogBox">
@@ -830,6 +1020,15 @@
         closeMobileSettings();
 
         await showHistory();
+      }
+      function openMobileHelp() {
+        closeMobileSettings();
+
+        document.getElementById("mobileHelpWindow").style.display = "block";
+      }
+
+      function closeMobileHelp() {
+        document.getElementById("mobileHelpWindow").style.display = "none";
       }
       function mobileOpenFile() {
         document.getElementById("file").click();
