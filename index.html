@@ -190,6 +190,52 @@
       #memoDialogButtons button {
         padding: 7px 16px;
       }
+      #shareDialog {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 25000;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #shareDialogBox {
+        box-sizing: border-box;
+        width: min(460px, calc(100vw - 30px));
+        background: white;
+        border: 2px solid #666;
+        border-radius: 10px;
+        padding: 18px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      }
+
+      #shareDialogBox h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      #shareFileInfo {
+        padding: 12px;
+        background: #f3f3f3;
+        border: 1px solid #bbb;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      #shareDialogButtons {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      #shareDialogButtons button {
+        min-height: 38px;
+        padding: 7px 14px;
+      }
       /* ===== スマホ用 ===== */
       #rotateNotice {
         display: none;
@@ -673,6 +719,32 @@
         </div>
       </div>
     </div>
+    <div id="shareDialog">
+      <div id="shareDialogBox">
+        <h3>📤 プロジェクト共有</h3>
+
+        <div id="shareFileInfo">共有ファイルを準備しています...</div>
+
+        <div id="shareDialogButtons">
+          <button type="button" onclick="cancelPreparedShare()">
+            キャンセル
+          </button>
+
+          <button type="button" onclick="downloadPreparedShare()">
+            端末に保存
+          </button>
+
+          <button
+            type="button"
+            id="executeShareButton"
+            onclick="executePreparedShare()"
+            disabled
+          >
+            共有する
+          </button>
+        </div>
+      </div>
+    </div>
     <canvas id="cv"></canvas>
     <div id="mobileToolbar">
       <div id="normalBar">
@@ -771,6 +843,9 @@
       const MAX_PROJECTS = 30;
 
       const selectedProjectIds = new Set();
+
+      let preparedShareFiles = [];
+      let preparedShareProjects = [];
 
       let compareDrag = false;
       let compareOffsetX = 0;
@@ -2108,78 +2183,166 @@
         }, 1000);
       }
 
-      async function shareHistoryProjects(projects) {
+      function shareHistoryProjects(projects) {
         if (!projects || projects.length === 0) {
           return;
         }
 
-        const shareFiles = projects.map((project) =>
-          createProjectShareFile(project),
-        );
+        const shareDialog = document.getElementById("shareDialog");
+
+        const shareFileInfo = document.getElementById("shareFileInfo");
+
+        const executeShareButton =
+          document.getElementById("executeShareButton");
+
+        preparedShareFiles = [];
+        preparedShareProjects = [];
+
+        shareFileInfo.textContent = "共有ファイルを準備しています...";
+
+        executeShareButton.disabled = true;
+
+        shareDialog.style.display = "flex";
+
+        setTimeout(() => {
+          try {
+            preparedShareProjects = [...projects];
+
+            preparedShareFiles = projects.map((project) =>
+              createProjectShareFile(project),
+            );
+
+            const totalBytes = preparedShareFiles.reduce(
+              (total, file) => total + file.size,
+              0,
+            );
+
+            const totalMegabytes = totalBytes / 1024 / 1024;
+
+            const fileNames = preparedShareFiles
+              .map((file) => "・" + file.name)
+              .join("\n");
+
+            shareFileInfo.textContent =
+              "ファイル数：" +
+              preparedShareFiles.length +
+              "件\n" +
+              "合計容量：" +
+              totalMegabytes.toFixed(1) +
+              " MB\n\n" +
+              fileNames;
+
+            const shareData = {
+              files: preparedShareFiles,
+            };
+
+            const canShare =
+              typeof navigator.share === "function" &&
+              typeof navigator.canShare === "function" &&
+              navigator.canShare(shareData);
+
+            executeShareButton.disabled = !canShare;
+
+            if (!canShare) {
+              shareFileInfo.textContent +=
+                "\n\nこの端末ではファイル共有を利用できません。" +
+                "\n「端末に保存」を利用してください。";
+            }
+          } catch (error) {
+            console.error("❌ 共有ファイル準備失敗", error);
+
+            shareFileInfo.textContent = "共有ファイルを準備できませんでした。";
+
+            executeShareButton.disabled = true;
+          }
+        }, 0);
+      }
+
+      function cancelPreparedShare() {
+        preparedShareFiles = [];
+        preparedShareProjects = [];
+
+        document.getElementById("shareDialog").style.display = "none";
+      }
+
+      function executePreparedShare() {
+        if (preparedShareFiles.length === 0) {
+          return;
+        }
 
         const shareData = {
           title: "マルタ・カゾエール プロジェクト",
 
           text:
-            projects.length === 1
+            preparedShareFiles.length === 1
               ? "プロジェクトファイルを共有します。"
-              : `${projects.length}件のプロジェクトファイルを共有します。`,
+              : preparedShareFiles.length +
+                "件のプロジェクトファイルを共有します。",
 
-          files: shareFiles,
+          files: preparedShareFiles,
         };
 
-        const canShareFiles =
-          typeof navigator.share === "function" &&
-          typeof navigator.canShare === "function" &&
-          navigator.canShare(shareData);
-
-        if (!canShareFiles) {
-          if (projects.length === 1) {
-            downloadProjectFile(projects[0]);
-
-            showMsg("共有非対応のためOMCファイルを保存しました");
-          } else {
-            alert(
-              "この端末またはブラウザでは、複数のOMCファイルをまとめて共有できません。\n\n各履歴の「共有」ボタンから1件ずつ共有してください。",
+        /*
+         * 重要:
+         * この関数では、共有前にawaitやファイル生成を行わない。
+         * ボタン操作から直ちにnavigator.share()を呼ぶ。
+         */
+        navigator
+          .share(shareData)
+          .then(() => {
+            showMsg(
+              preparedShareFiles.length === 1
+                ? "✅ プロジェクトを共有しました"
+                : "✅ 複数のプロジェクトを共有しました",
             );
-          }
 
+            cancelPreparedShare();
+          })
+          .catch((error) => {
+            if (error.name === "AbortError") {
+              showMsg("共有をキャンセルしました");
+
+              return;
+            }
+
+            console.error("❌ プロジェクト共有失敗", error);
+
+            let message = "共有できませんでした。";
+
+            if (error.message && error.message.includes("too large")) {
+              message =
+                "ファイル容量が大きすぎるため共有できませんでした。" +
+                "\n「端末に保存」を利用してください。";
+            } else {
+              message +=
+                "\n端末側の共有制限または容量制限の可能性があります。" +
+                "\n「端末に保存」を利用してください。";
+            }
+
+            alert(message);
+
+            showMsg("❌ プロジェクトを共有できませんでした");
+          });
+      }
+
+      function downloadPreparedShare() {
+        if (preparedShareProjects.length === 0) {
           return;
         }
 
-        try {
-          await navigator.share(shareData);
+        preparedShareProjects.forEach((project, index) => {
+          setTimeout(() => {
+            downloadProjectFile(project);
+          }, index * 300);
+        });
 
-          showMsg(
-            projects.length === 1
-              ? "✅ プロジェクトを共有しました"
-              : `✅ ${projects.length}件のプロジェクトを共有しました`,
-          );
-        } catch (error) {
-          if (error.name === "AbortError") {
-            showMsg("共有をキャンセルしました");
+        showMsg(
+          preparedShareProjects.length === 1
+            ? "✅ OMCファイルを端末に保存しました"
+            : "✅ 選択したOMCファイルを端末に保存しました",
+        );
 
-            return;
-          }
-
-          console.error("❌ プロジェクト共有失敗", error);
-
-          if (projects.length === 1) {
-            downloadProjectFile(projects[0]);
-
-            showMsg("共有できなかったため、OMCファイルを保存しました");
-
-            return;
-          }
-
-          alert(
-            "選択した複数のOMCファイルをまとめて共有できませんでした。\n\n" +
-              "ファイル容量が大きいか、この端末が複数ファイル共有に対応していない可能性があります。\n\n" +
-              "各履歴の「共有」ボタンから1件ずつ操作してください。",
-          );
-
-          showMsg("❌ 複数ファイルを共有できませんでした");
-        }
+        cancelPreparedShare();
       }
 
       function createHistorySelectionBar(historyList) {
@@ -2249,12 +2412,12 @@
 
         shareButton.textContent = "共有";
 
-        shareButton.onclick = async () => {
+        shareButton.onclick = () => {
           const selectedProjects = historyList.filter((project) =>
             selectedProjectIds.has(project.id),
           );
 
-          await shareHistoryProjects(selectedProjects);
+          shareHistoryProjects(selectedProjects);
         };
 
         selectionBar.appendChild(shareButton);
@@ -2461,8 +2624,8 @@
 
           shareButton.style.marginLeft = "8px";
 
-          shareButton.onclick = async () => {
-            await shareHistoryProjects([project]);
+          shareButton.onclick = () => {
+            shareHistoryProjects([project]);
           };
 
           const deleteButton = document.createElement("button");
