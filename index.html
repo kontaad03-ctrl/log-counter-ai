@@ -438,7 +438,7 @@
       <input
         type="file"
         id="projectFile"
-        accept=".omc"
+        accept=".omc,.txt"
         style="display: none"
         onchange="loadProject(event)"
       />
@@ -1671,13 +1671,34 @@
           switchTab(0);
         }
       }
-      async function loadProject(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const json = await file.text();
-        const projectData = JSON.parse(json);
-        await restoreProject(projectData);
-        showMsg("✅ プロジェクト読込完了");
+      async function loadProject(event) {
+        const file = event.target.files[0];
+
+        if (!file) {
+          return;
+        }
+
+        try {
+          const json = await file.text();
+
+          const projectData = JSON.parse(json);
+
+          if (!projectData || !Array.isArray(projectData.photos)) {
+            throw new Error("プロジェクト形式ではありません");
+          }
+
+          await restoreProject(projectData);
+
+          showMsg("✅ プロジェクト読込完了");
+        } catch (error) {
+          console.error("❌ プロジェクト読込失敗", error);
+
+          alert("このファイルは有効なプロジェクトファイルではありません。");
+
+          showMsg("❌ プロジェクトを読み込めませんでした");
+        } finally {
+          event.target.value = "";
+        }
       }
       async function loadHistory(index) {
         const historyList = await getProjectHistory();
@@ -2053,10 +2074,12 @@
       function createProjectShareFile(project) {
         const projectJson = JSON.stringify(project);
 
-        const testFileName = createProjectFileName(project) + ".txt";
+        const omcFileName = createProjectFileName(project);
 
-        return new File([projectJson], testFileName, {
-          type: "text/plain",
+        const textFileName = omcFileName.replace(/\.omc$/i, ".txt");
+
+        return new File([projectJson], textFileName, {
+          type: "text/plain;charset=utf-8",
         });
       }
 
